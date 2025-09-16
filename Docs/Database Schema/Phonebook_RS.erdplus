@@ -1,0 +1,691 @@
+{
+  "diagramType": 2,
+  "data": {
+    "nodes": [
+      {
+        "id": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "type": "Table",
+        "position": {
+          "x": 199.4575134779073,
+          "y": 268.10412787161016
+        },
+        "data": {
+          "label": "Employee",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "95de9ae0-0081-4747-ad52-3f9d6235356d",
+              "name": "Employee ID",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false,
+              "isUnique": true
+            },
+            {
+              "id": "2fcecf6a-a329-45ac-b86b-4fe0e0f1bb71",
+              "name": "First Name",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": false
+            },
+            {
+              "id": "e05d2c22-cc05-4d98-9647-d0fafd5e1c5f",
+              "name": "Last Name",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": false
+            },
+            {
+              "id": "116c90ca-898b-4dcf-89ff-089ab4212a4d",
+              "name": "Email",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": true,
+              "isOptional": false
+            },
+            {
+              "id": "a9a5af4a-7c73-41a0-9902-d9ac785caebe",
+              "name": "Phone Number",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": true,
+              "isOptional": true
+            },
+            {
+              "id": "bcd9edfc-0a20-4906-91a0-d822914e1aa0",
+              "name": "Desk Location",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": true
+            },
+            {
+              "id": "908cc7ea-4912-4383-82c7-41b85b1d7f77",
+              "name": "Job Title",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": false
+            },
+            {
+              "id": "7341c6af-d698-4ff5-8160-b4414bcc6583",
+              "name": "Hire Date",
+              "type": "DATE",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": false
+            },
+            {
+              "id": "b7ae6041-1267-4219-919a-d4ff823d4fc0",
+              "name": "Status",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": false,
+              "isOptional": false
+            },
+            {
+              "id": "6d39411d-d6e1-44be-a640-b418814ab0e0",
+              "name": "Department ID",
+              "type": "INT",
+              "position": 0,
+              "isUnique": true,
+              "isOptional": false
+            },
+            {
+              "id": "fk_395df253-92ed-42d8-9f2c-63a45f81be56",
+              "name": "fk_Employee",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "48eece0a-d63c-4c02-8e33-08e48c61e973",
+                "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+                "columns": [
+                  {
+                    "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                    "name": "Manager ID",
+                    "type": "INT"
+                  }
+                ]
+              },
+              "isOptional": true
+            },
+            {
+              "id": "fk_322307ba-0dfc-4035-97b5-2a6c0d02603b",
+              "name": "fk_Department",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "6a597f8f-722c-4365-a9f7-e625eefa0c38",
+                "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+                "columns": [
+                  {
+                    "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                    "name": "Department ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "fk_47e48204-deb8-41cb-9dc8-fa1a7e2ad953",
+              "name": "fk_Site",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "fc630dd5-37c4-41c8-b646-d53db5fc090b",
+                "sourceTableId": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+                "columns": [
+                  {
+                    "id": "fk_1f9c54c0-1ea8-43fb-9c50-6e76a5e8cbf1",
+                    "name": "Site ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ],
+          "numberOfGroups": 0,
+          "isSelected": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 347
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "type": "Table",
+        "position": {
+          "x": 1032.3472617715133,
+          "y": 353.70721835607696
+        },
+        "data": {
+          "label": "Department",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "16c54a17-ab16-4526-8872-27aa0b32070a",
+              "name": "Department ID",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false,
+              "isUnique": false
+            },
+            {
+              "id": "3f5c4f80-38a4-445b-98ca-9e0d453e5da9",
+              "name": "Name",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": true
+            },
+            {
+              "id": "b253b452-8ff9-4493-a283-8d00fff56ff9",
+              "name": "Code",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": true
+            },
+            {
+              "id": "6cf95249-989b-4e77-ac7f-657938ce1e43",
+              "name": "Location",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": false
+            },
+            {
+              "id": "dafd6294-33d5-428b-8e23-1d23db0de197",
+              "name": "Budget",
+              "type": "FLOAT",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": false
+            },
+            {
+              "id": "3a377af5-9953-4300-a73b-02f2d3e60ad8",
+              "name": "Phone Number",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": true
+            },
+            {
+              "id": "748369b7-1103-4187-94fe-4c9e5920fd0c",
+              "name": "Email",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": true
+            },
+            {
+              "id": "6efa4c35-6963-4f69-8d17-8bbd20764a14",
+              "name": "Description",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": false
+            },
+            {
+              "id": "fk_a19fa5c6-46dc-4ddc-b6f4-00757bcf56e8",
+              "name": "fk_Department",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "0269b146-2a47-48d0-8943-092a6eb7e295",
+                "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+                "columns": [
+                  {
+                    "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                    "name": "Parent Department ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "fk_82a4eb5e-de04-4954-8afd-bc02aa29025e",
+              "name": "fk_Employee",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "951c50de-58c0-4d85-974a-a0b8ac084509",
+                "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+                "columns": [
+                  {
+                    "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                    "name": "Department Head ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "fk_ce039992-3815-4736-9451-91a0987b62d7",
+              "name": "fk_Site",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "bdb7b002-ee8b-4d1b-bf80-b07f67c615ae",
+                "sourceTableId": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+                "columns": [
+                  {
+                    "id": "fk_1f9c54c0-1ea8-43fb-9c50-6e76a5e8cbf1",
+                    "name": "Site ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ],
+          "numberOfGroups": 0,
+          "isSelected": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 297
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+        "type": "Table",
+        "position": {
+          "x": 592.3121411831887,
+          "y": 584.9883210890182
+        },
+        "data": {
+          "label": "Site",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "1f9c54c0-1ea8-43fb-9c50-6e76a5e8cbf1",
+              "name": "Site ID",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false,
+              "isUnique": true
+            },
+            {
+              "id": "63579f51-2028-4c33-a654-bfdbbf5d513d",
+              "name": "Address",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": true
+            },
+            {
+              "id": "3687bc15-d113-45b7-bb86-d65d65f676fa",
+              "name": "Buildings",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": false
+            },
+            {
+              "id": "588be1c8-e4af-4d89-95b5-986fce8b7b33",
+              "name": "Name",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isPrimaryKey": false,
+              "isUnique": false
+            },
+            {
+              "id": "fk_b20ff000-ba64-488b-8936-d4e4f8757de9",
+              "name": "fk_Employee",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "8b49abcb-2fac-4b17-a0c6-cee67c5efae0",
+                "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+                "columns": [
+                  {
+                    "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                    "name": "Manager ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "fk_fb0b512f-7389-4927-801c-97abc94d87da",
+              "name": "fk_Department",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "2b113c3b-2fb5-41f8-bc3d-0d891e2a0edd",
+                "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+                "columns": [
+                  {
+                    "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                    "name": "Departments",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ],
+          "numberOfGroups": 0,
+          "isSelected": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 174
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "261f1d5c-4a47-4539-95cf-b2f1c8c7cd10",
+        "type": "Table",
+        "position": {
+          "x": 656.4734949679953,
+          "y": 245.9791894971458
+        },
+        "data": {
+          "label": "Dept/Emp Bridge",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "fk_41ac53c6-b893-4a7e-9a44-c33d586f2a30",
+              "name": "fk_Employee",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "42c62a50-554c-4dd2-9ff6-0446c97647a7",
+                "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+                "columns": [
+                  {
+                    "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                    "name": "Employee ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "fk_d48538bc-53d7-44f9-a1eb-57666cf57bdc",
+              "name": "fk_Department",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "1e6368f3-021b-407d-b61f-b10073c93695",
+                "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+                "columns": [
+                  {
+                    "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                    "name": "Department ID",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ],
+          "numberOfGroups": 0,
+          "isSelected": true
+        },
+        "measured": {
+          "width": 240,
+          "height": 75
+        },
+        "selected": true,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "d87e12ad-8e6d-40e5-9f98-c8d035819584->d87e12ad-8e6d-40e5-9f98-c8d035819584_48eece0a-d63c-4c02-8e33-08e48c61e973",
+        "type": "Relational",
+        "source": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "targetHandle": "foreign-key-handle-48eece0a-d63c-4c02-8e33-08e48c61e973",
+        "target": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "48eece0a-d63c-4c02-8e33-08e48c61e973",
+            "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+            "columns": [
+              {
+                "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                "name": "Employee ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd->e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd_0269b146-2a47-48d0-8943-092a6eb7e295",
+        "type": "Relational",
+        "source": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "targetHandle": "foreign-key-handle-0269b146-2a47-48d0-8943-092a6eb7e295",
+        "target": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "0269b146-2a47-48d0-8943-092a6eb7e295",
+            "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+            "columns": [
+              {
+                "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                "name": "Department ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "d87e12ad-8e6d-40e5-9f98-c8d035819584->e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd_951c50de-58c0-4d85-974a-a0b8ac084509",
+        "type": "Relational",
+        "source": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "targetHandle": "foreign-key-handle-951c50de-58c0-4d85-974a-a0b8ac084509",
+        "target": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "951c50de-58c0-4d85-974a-a0b8ac084509",
+            "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+            "columns": [
+              {
+                "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                "name": "Employee ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd->d87e12ad-8e6d-40e5-9f98-c8d035819584_6a597f8f-722c-4365-a9f7-e625eefa0c38",
+        "type": "Relational",
+        "source": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "targetHandle": "foreign-key-handle-6a597f8f-722c-4365-a9f7-e625eefa0c38",
+        "target": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "6a597f8f-722c-4365-a9f7-e625eefa0c38",
+            "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+            "columns": [
+              {
+                "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                "name": "Department ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "619c020c-d2fa-4e44-9f64-259f13b693c8->d87e12ad-8e6d-40e5-9f98-c8d035819584_fc630dd5-37c4-41c8-b646-d53db5fc090b",
+        "type": "Relational",
+        "source": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+        "targetHandle": "foreign-key-handle-fc630dd5-37c4-41c8-b646-d53db5fc090b",
+        "target": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "fc630dd5-37c4-41c8-b646-d53db5fc090b",
+            "sourceTableId": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+            "columns": [
+              {
+                "id": "fk_1f9c54c0-1ea8-43fb-9c50-6e76a5e8cbf1",
+                "name": "Site ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "d87e12ad-8e6d-40e5-9f98-c8d035819584->619c020c-d2fa-4e44-9f64-259f13b693c8_8b49abcb-2fac-4b17-a0c6-cee67c5efae0",
+        "type": "Relational",
+        "source": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "targetHandle": "foreign-key-handle-8b49abcb-2fac-4b17-a0c6-cee67c5efae0",
+        "target": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "8b49abcb-2fac-4b17-a0c6-cee67c5efae0",
+            "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+            "columns": [
+              {
+                "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                "name": "Employee ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd->619c020c-d2fa-4e44-9f64-259f13b693c8_2b113c3b-2fb5-41f8-bc3d-0d891e2a0edd",
+        "type": "Relational",
+        "source": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "targetHandle": "foreign-key-handle-2b113c3b-2fb5-41f8-bc3d-0d891e2a0edd",
+        "target": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "2b113c3b-2fb5-41f8-bc3d-0d891e2a0edd",
+            "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+            "columns": [
+              {
+                "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                "name": "Department ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "619c020c-d2fa-4e44-9f64-259f13b693c8->e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd_bdb7b002-ee8b-4d1b-bf80-b07f67c615ae",
+        "type": "Relational",
+        "source": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+        "targetHandle": "foreign-key-handle-bdb7b002-ee8b-4d1b-bf80-b07f67c615ae",
+        "target": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "bdb7b002-ee8b-4d1b-bf80-b07f67c615ae",
+            "sourceTableId": "619c020c-d2fa-4e44-9f64-259f13b693c8",
+            "columns": [
+              {
+                "id": "fk_1f9c54c0-1ea8-43fb-9c50-6e76a5e8cbf1",
+                "name": "Site ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "d87e12ad-8e6d-40e5-9f98-c8d035819584->261f1d5c-4a47-4539-95cf-b2f1c8c7cd10_42c62a50-554c-4dd2-9ff6-0446c97647a7",
+        "type": "Relational",
+        "source": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+        "targetHandle": "foreign-key-handle-42c62a50-554c-4dd2-9ff6-0446c97647a7",
+        "target": "261f1d5c-4a47-4539-95cf-b2f1c8c7cd10",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "42c62a50-554c-4dd2-9ff6-0446c97647a7",
+            "sourceTableId": "d87e12ad-8e6d-40e5-9f98-c8d035819584",
+            "columns": [
+              {
+                "id": "fk_95de9ae0-0081-4747-ad52-3f9d6235356d",
+                "name": "Employee ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd->261f1d5c-4a47-4539-95cf-b2f1c8c7cd10_1e6368f3-021b-407d-b61f-b10073c93695",
+        "type": "Relational",
+        "source": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+        "targetHandle": "foreign-key-handle-1e6368f3-021b-407d-b61f-b10073c93695",
+        "target": "261f1d5c-4a47-4539-95cf-b2f1c8c7cd10",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "1e6368f3-021b-407d-b61f-b10073c93695",
+            "sourceTableId": "e6ad46bd-92b4-42d8-a3e2-44c6b63a7abd",
+            "columns": [
+              {
+                "id": "fk_16c54a17-ab16-4526-8872-27aa0b32070a",
+                "name": "Department ID",
+                "type": "INT"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "viewport": {
+      "x": -40.33609810953624,
+      "y": -34.05008465437095,
+      "zoom": 0.6540553080772628
+    }
+  },
+  "name": "Phonebook_RS",
+  "folder": {
+    "name": "Diagrams",
+    "folderType": 1,
+    "depth": 0,
+    "id": 42829
+  },
+  "id": 34162,
+  "updatedAtTimestamp": 1757968449
+}
