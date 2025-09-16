@@ -1,6 +1,6 @@
 # Lewis-Team-2: Secure Cloud-Based Employee Phonebook
 
-## 📖 Project Description
+## Project Description
 This project is a secure, cloud-based internal employee directory and organizational structure web application. The tool is designed to improve visibility into company hierarchy, support collaboration, and provide efficient access to employee details.  
 
 ### Core Features
