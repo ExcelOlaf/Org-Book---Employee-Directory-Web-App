@@ -1,7 +1,12 @@
 ### Setup / Tools
 - IDE: VS Code https://code.visualstudio.com/download
-- Extensions:
-    - AWS Toolkit
+    - Extensions:
+        - AWS Toolkit
+    - Clone Repo:
+        - In the search bar at the top of the screen, enter `>git: clone`
+        - Paste in the repo URL
+        - Sign in using your project token name as the username, and the actual token as the password.
+    
 
 - NodeJS
     - Install: https://nodejs.org/dist/latest-v22.x/node-v22.19.0-x64.msi
