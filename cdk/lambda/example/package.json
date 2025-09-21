@@ -1,0 +1,11 @@
+{
+    "scripts": {
+        "build": "tsc -w"
+    },
+    "devDependencies": {
+        "@types/node": "^24.5.2"
+    },
+    "dependencies": {
+        "aws-lambda": "^1.0.7"
+    }
+}
