@@ -1,0 +1,79 @@
+{
+  "EmployeeID": {
+    "N": "123456"
+  },
+  "Address": {
+    "S": "123 Main Street, Milwaukee, WI, 53202"
+  },
+  "Department Code": {
+    "N": "10"
+  },
+  "Department Location": {
+    "S": "Springfield Campus"
+  },
+  "Department Name": {
+    "S": "Engineering"
+  },
+  "DepartmentID": {
+    "N": "10"
+  },
+  "dept_head_id": {
+    "N": "222222"
+  },
+  "Desk Location": {
+    "S": "HQ-2-45"
+  },
+  "Direct Reports": {
+    "SS": [
+      "654321",
+      "789012"
+    ]
+  },
+  "Email Address": {
+    "S": "alice.johnson@example.com"
+  },
+  "First Name": {
+    "S": "Alice"
+  },
+  "Hire Date": {
+    "S": "06/15/2021"
+  },
+  "Job Title": {
+    "S": "Software Engineer"
+  },
+  "Last Name": {
+    "S": "Johnson"
+  },
+  "ManagerID": {
+    "N": "111111"
+  },
+  "parent_dept_id": {
+    "N": "1"
+  },
+  "Phone Number": {
+    "S": "+1-555-987-6543"
+  },
+  "SiteID": {
+    "N": "5"
+  },
+  "site_buildings": {
+    "SS": [
+      "Building A",
+      "Building B",
+      "Building C"
+    ]
+  },
+  "site_departments": {
+    "SS": [
+      "Engineering",
+      "Product",
+      "Support"
+    ]
+  },
+  "site_name": {
+    "S": "Springfield HQ"
+  },
+  "Status": {
+    "S": "Active"
+  }
+}
