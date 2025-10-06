@@ -79,4 +79,4 @@ app.post('/api/v1/process-s3-upload', async (req, res) => {
   }
 });
 
-export const handler = serverlessExpress({ app });
+export const handler = serverlessExpress({ app }) as any;

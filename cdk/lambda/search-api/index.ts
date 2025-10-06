@@ -53,4 +53,4 @@ app.post('/api/v1/search/advanced', async (req, res) => {
   }
 });
 
-export const handler = serverlessExpress({ app });
+export const handler = serverlessExpress({ app }) as any;

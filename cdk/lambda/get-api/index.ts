@@ -29,4 +29,4 @@ app.get('/api/v1/contacts', async (req, res) => {
   }
 });
 
-export const handler = serverlessExpress({ app });
+export const handler = serverlessExpress({ app }) as any;
