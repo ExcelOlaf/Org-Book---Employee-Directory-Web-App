@@ -1,17 +1,17 @@
-// import * as cdk from 'aws-cdk-lib';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as Cdk from '../lib/cdk-stack';
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import { CdkStack } from '../lib/cdk-stack';
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/cdk-stack.ts
-test('SQS Queue Created', () => {
+// Basic test for CDK stack creation
+// test('CDK Stack Creates Successfully', () => {
 //   const app = new cdk.App();
-//     // WHEN
-//   const stack = new Cdk.CdkStack(app, 'MyTestStack');
-//     // THEN
+//   // WHEN
+//   const stack = new CdkStack(app, 'TestStack');
+//   // THEN
 //   const template = Template.fromStack(stack);
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
+//   // Verify DynamoDB table exists
+//   template.hasResourceProperties('AWS::DynamoDB::Table', {
+//     BillingMode: 'PAY_PER_REQUEST'
 //   });
-});
+// });
