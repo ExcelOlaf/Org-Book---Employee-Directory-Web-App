@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.896.0",
     "@aws-sdk/lib-dynamodb": "^3.896.0",
+    "expo": "^54.0.12",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3"
