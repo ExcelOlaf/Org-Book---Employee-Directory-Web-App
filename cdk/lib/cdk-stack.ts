@@ -1,47 +1,57 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3n from "aws-cdk-lib/aws-s3-notifications";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 
-// DynamoDB client
-const client = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(client);
+export class CdkStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
 
-// 👇 Pull table name from environment variable (set by CDK)
-const TABLE_NAME = process.env.EMPLOYEE_TABLE!;
+    // --- DynamoDB Table (use existing) ---
+    const table = dynamodb.Table.fromTableName(
+      this,
+      "EmployeeTable",
+      "Employeee" // ✅ Reference existing table, not create a new one
+    );
 
-// Optional: strongly type an Employee
-interface Employee {
-  EmployeeID: number;
-  Name?: string;
-  Address?: string;
-  DepartmentCode?: string;
-  ManagerID?: number;
-}
+    // --- S3 Bucket (Persistent) ---
+    const bucket = new s3.Bucket(this, "EmployeeDataBucket", {
+      removalPolicy: cdk.RemovalPolicy.RETAIN, // ✅ Keeps bucket across redeploys
+      autoDeleteObjects: false,                // ✅ Prevents CloudFormation from emptying bucket
+    });
 
-export const handler = async (event: any) => {
-  const action = event.action;
+    // --- Lambda Function ---
+    const insertLambda = new lambda.Function(this, "InsertLambda", {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: "index.handler",
+      code: lambda.Code.fromAsset("lambda/insert-api/dist/insert-api"), // ✅ Ensure this folder exists
+      environment: {
+        TABLE_NAME: "Employeee",
+        PRIMARY_KEY: "EmployeeID",
+      },
+    });
 
-  // Fetch a single employee and their direct reports
-  if (action === "getEmployee") {
-    const emp = await docClient.send(new GetCommand({
-      TableName: TABLE_NAME,
-      Key: { EmployeeID: event.EmployeeID } // 👈 must match table schema
-    }));
+    // --- Allow S3 to invoke Lambda ---
+    insertLambda.addPermission("AllowS3Invoke", {
+      action: "lambda:InvokeFunction",
+      principal: new cdk.aws_iam.ServicePrincipal("s3.amazonaws.com"),
+      sourceArn: bucket.bucketArn,
+    });
 
-    let reports: Employee[] = [];
+    // --- S3 Event → Lambda Trigger ---
+    bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.LambdaDestination(insertLambda)
+    );
 
-    // If the employee exists, query reports using ManagerIndex GSI
-    if (emp.Item) {
-      const resp = await docClient.send(new QueryCommand({
-        TableName: TABLE_NAME,
-        IndexName: "ManagerIndex", // only works if you’ve created a GSI on ManagerID
-        KeyConditionExpression: "ManagerID = :m",
-        ExpressionAttributeValues: { ":m": emp.Item.EmployeeID }
-      }));
-      reports = (resp.Items as Employee[]) ?? [];
-    }
+    // --- Permissions ---
+    bucket.grantRead(insertLambda);
+    table.grantReadWriteData(insertLambda);
 
-    return { employee: emp.Item, reports };
+    // --- CloudFormation Outputs ---
+    new cdk.CfnOutput(this, "BucketName", { value: bucket.bucketName });
+    new cdk.CfnOutput(this, "TableName", { value: "Employeee" });
   }
-
-  return { message: "Unknown action", received: event };
-};
+}
