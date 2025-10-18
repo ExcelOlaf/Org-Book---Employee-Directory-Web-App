@@ -1,0 +1,17 @@
+{
+  "name": "insert-api",
+  "version": "1.0.0",
+  "description": "S3-triggered Lambda to insert/update items in DynamoDB",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "^20.19.22",
+    "typescript": "^5.9.3"
+  }
+}
