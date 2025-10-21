@@ -1,0 +1,10 @@
+{
+  "Records": [
+    {
+      "s3": {
+        "bucket": { "name": "mployee-data-bucket" },
+        "object": { "key": "table-Employeee/employees.json" }
+      }
+    }
+  ]
+}
