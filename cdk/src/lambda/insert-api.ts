@@ -1,4 +1,4 @@
-import express from 'express';
+/* import express from 'express';
 import serverlessExpress from '@vendia/serverless-express';
 // Note: No CORS needed - this API is only triggered by S3, not frontend
 // Add database import
@@ -79,4 +79,4 @@ app.post('/api/v1/process-s3-upload', async (req, res) => {
   }
 });
 
-export const handler = serverlessExpress({ app }) as any;
+export const handler = serverlessExpress({ app }) as any; */
