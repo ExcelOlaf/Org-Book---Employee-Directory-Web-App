@@ -11,7 +11,7 @@ const tiles = [
         name: "Org Tree", path: "/org-tree"
     },
     {
-        name: "settings", path: "/settings"
+        name: "Settings", path: "/settings"
     }
 ];
 
