@@ -5,9 +5,9 @@ import { CdkStack } from "../lib/cdk-stack";
 const app = new cdk.App();
 
 // Use environment variables for account and region
-new CdkStack(app, "ContactsStack", {
+new CdkStack(app, "CdkStack", {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: "us-east-1",
+    region: "us-east-2",
   },
 });

@@ -1,4 +1,4 @@
-import express from 'express';
+/* import express from 'express';
 import serverlessExpress from '@vendia/serverless-express';
 import cors from 'cors';
 // Add database import
@@ -53,4 +53,4 @@ app.post('/api/v1/search/advanced', async (req, res) => {
   }
 });
 
-export const handler = serverlessExpress({ app }) as any;
+export const handler = serverlessExpress({ app }) as any; */
