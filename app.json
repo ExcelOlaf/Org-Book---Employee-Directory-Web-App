@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "8d48f242-1252-4958-afad-b413d39a799b"
+      }
+    },
+    "owner": "gavinjones44",
+    "slug": "employee-phonebook"
+  }
+}
