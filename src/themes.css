@@ -1,0 +1,150 @@
+/* ===================================================
+   PHONEBOOK APP - THEME CUSTOMIZATION EXAMPLES
+   ===================================================
+   
+   To customize your phonebook app colors, simply copy
+   one of these theme sections and paste it into your
+   index.css file, replacing the existing :root variables.
+   
+   All components will automatically use the new colors
+   while maintaining consistency!
+*/
+
+/* === DEFAULT THEME (Corporate Blue) === */
+/*
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #dbeafe;
+  --secondary-color: #64748b;
+  --secondary-hover: #475569;
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+}
+*/
+/* === FOREST GREEN THEME === */
+:root {
+  --primary-color: #059669;
+  --primary-hover: #047857;
+  --primary-light: #d1fae5;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+}
+
+/* === PURPLE THEME === */
+/*
+:root {
+  --primary-color: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-light: #ede9fe;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+}
+*/
+
+/* === ROSE THEME === */
+/*
+:root {
+  --primary-color: #e11d48;
+  --primary-hover: #be185d;
+  --primary-light: #fce7f3;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+}
+*/
+
+/* === TEAL THEME === */
+/*
+:root {
+  --primary-color: #0891b2;
+  --primary-hover: #0e7490;
+  --primary-light: #cffafe;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+}
+*/
+
+/* === ORANGE THEME === */
+/*
+:root {
+  --primary-color: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-light: #fed7aa;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --accent-color: #7c3aed;
+  --accent-hover: #6d28d9;
+}
+*/
+
+/* === DARK PROFESSIONAL THEME === */
+/*
+:root {
+  --primary-color: #60a5fa;
+  --primary-hover: #3b82f6;
+  --primary-light: #1e293b;
+  --secondary-color: #94a3b8;
+  --secondary-hover: #cbd5e1;
+  --accent-color: #fbbf24;
+  --accent-hover: #f59e0b;
+  
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-light: #334155;
+  --border-medium: #475569;
+  --border-dark: #64748b;
+}
+*/
+
+/* === HIGH CONTRAST THEME (Accessibility) === */
+/*
+:root {
+  --primary-color: #000000;
+  --primary-hover: #374151;
+  --primary-light: #f3f4f6;
+  --secondary-color: #4b5563;
+  --secondary-hover: #374151;
+  --accent-color: #dc2626;
+  --accent-hover: #b91c1c;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-light: #d1d5db;
+  --border-medium: #9ca3af;
+  --border-dark: #6b7280;
+}
+*/
+
+/* ===================================================
+   HOW TO USE THESE THEMES:
+   
+   1. Choose a theme from above
+   2. Uncomment it (remove the comment markers)
+   3. Comment out or replace the current theme
+   4. Save the file and see your changes!
+   
+   You can also create custom themes by:
+   - Changing individual color values
+   - Using your company brand colors
+   - Adjusting colors for seasonal themes
+   
+   All components will automatically adapt to
+   your new color scheme while maintaining
+   consistency and accessibility.
+   =================================================== */
