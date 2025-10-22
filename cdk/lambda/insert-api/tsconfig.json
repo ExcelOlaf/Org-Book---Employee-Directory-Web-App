@@ -13,8 +13,9 @@
     "sourceMap": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "express"]   // ✅ add this
   },
-  "include": ["./index.ts"],
+  "include": ["./index.ts", "./bin/**/*.ts", "./lib/**/*.ts", "../lambda/**/*.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

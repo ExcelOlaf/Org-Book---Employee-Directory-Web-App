@@ -1,3 +1,0 @@
-EmployeeID,FirstName,LastName,ManagerID,EmailAddress,PhoneNumber,Status
-001234,Alice,Johnson,000000,alice.johnson@example.com,123456789,Active
-001235,Bob,Smith,001234,bob.smith@example.com,987654321,Active
