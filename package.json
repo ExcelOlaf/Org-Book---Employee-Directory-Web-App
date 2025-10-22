@@ -15,10 +15,11 @@
     "cdk:build": "cd cdk && npm run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.896.0",
-    "@aws-sdk/lib-dynamodb": "^3.896.0",
+    "@aws-sdk/client-dynamodb": "^3.902.0",
+    "@aws-sdk/lib-dynamodb": "^3.902.0",
     "bootstrap": "^5.3.8",
     "expo": "^54.0.12",
+    "express": "^5.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@types/express": "^5.0.3",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/react-router-dom": "^5.3.3",
