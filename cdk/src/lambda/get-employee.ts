@@ -15,11 +15,11 @@ export const handler = async (event: any) => {
     }
 
     const result = await dynamo.send(
-            new GetCommand({
-                TableName: tableName,
-                Key: { EmployeeID: employeeId }
-            })
-        );
+        new GetCommand({
+            TableName: tableName,
+            Key: { EmployeeID: employeeId }
+        })
+    );
 
-        return { statusCode: 200, body: JSON.stringify(result.Item ?? {}) };
+    return { statusCode: 200, body: JSON.stringify(result.Item ?? {}) };
 }
