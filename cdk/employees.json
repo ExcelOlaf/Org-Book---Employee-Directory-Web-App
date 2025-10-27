@@ -1,7 +1,0 @@
-[
-  {
-    "EmployeeID": { "N": "123455" },
-    "Name": { "S": "Excel Olatunji" },
-    "Age": { "N": "23" }
-  }
-]
