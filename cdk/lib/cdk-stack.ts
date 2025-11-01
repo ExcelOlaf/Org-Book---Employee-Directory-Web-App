@@ -52,6 +52,14 @@ export class CdkStack extends cdk.Stack {
     new cdk.CfnOutput(this, "BucketName", { value: bucket.bucketName });
     new cdk.CfnOutput(this, "TableName", { value: employeeTable.tableName });
 
+    const searchEmployeesLambda = new lambda.Function(this, "SearchLambda", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'lambda/search-employees.handler',
+      code: lambda.Code.fromAsset('dist/src'),
+      environment: { TABLE_NAME: employeeTable.tableName }
+    });
+    employeeTable.grantReadData(searchEmployeesLambda);
+
     // API
     const api = new apigateway.RestApi(this, 'employee-api', {
       restApiName: 'employee-api',
@@ -59,10 +67,10 @@ export class CdkStack extends cdk.Stack {
     });
 
     const employees = api.root.addResource('employees');
-
     const employeeID = employees.addResource('{employeeId}');
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
-
+    const search = employees.addResource('search');
+    search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda));
 
   }
 }
