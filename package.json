@@ -17,6 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.902.0",
     "@aws-sdk/lib-dynamodb": "^3.902.0",
+    "@roumi/treemaker": "^1.2.0",
     "bootstrap": "^5.3.8",
     "expo": "^54.0.12",
     "express": "^5.1.0",
