@@ -1,110 +1,139 @@
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import treeMaker from "@roumi/treemaker";
+import "../tree_maker.css";
 
-/** Person type */
-interface Person {
-  id: number;
-  name: string;
-  title: string;
-  reports?: Person[];
-}
+import { fetchOrgData } from "../services/orgService";
+import type { Person } from "../services/orgService";
+import { buildTreeMakerData } from "../utils/treeMakerMapper";
 
-/** Example data */
-const orgData: Person = {
-  id: 1,
-  name: "Alice Johnson",
-  title: "CEO",
-  reports: [
-    {
-      id: 2,
-      name: "Bob Smith",
-      title: "VP of Engineering",
-      reports: [
-        { id: 4, name: "Carol Lee", title: "Engineering Manager", reports: [] },
-        { id: 5, name: "David Kim", title: "QA Lead", reports: [] },
-      ],
-    },
-    {
-      id: 3,
-      name: "Eve Martin",
-      title: "VP of Marketing",
-      reports: [{ id: 6, name: "Frank Wright", title: "Marketing Manager", reports: [] }],
-    },
-  ],
-};
-
-type TreeNodeProps = {
-  person: Person;
-  onSelect: (person: Person) => void;
-};
-
-/** Recursive Tree Node */
-const TreeNode: React.FC<TreeNodeProps> = ({ person, onSelect }) => {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <div style={{ marginLeft: "20px", marginTop: "10px" }}>
-      <button
-        onClick={() => onSelect(person)}
-        style={{
-          background: "#f5f5f5",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-          padding: "8px 12px",
-          width: "200px",
-          textAlign: "left",
-          cursor: "pointer",
-        }}
-      >
-        <strong>{person.name}</strong>
-        <br />
-        <span style={{ fontSize: "0.9em", color: "#666" }}>{person.title}</span>
-      </button>
-
-      {person.reports && person.reports.length > 0 && (
-        <div style={{ marginTop: "5px" }}>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#007bff",
-              cursor: "pointer",
-              marginTop: "5px",
-            }}
-          >
-            {expanded ? "▼ Hide Reports" : "▶ Show Reports"}
-          </button>
-
-          {expanded && (
-            <div style={{ marginLeft: "20px" }}>
-              {person.reports.map((report) => (
-                <TreeNode key={report.id} person={report} onSelect={onSelect} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/** Main OrgTree Component */
-const OrgTree: React.FC = () => {
+export default function OrgTree() {
   const navigate = useNavigate();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const listenersRef = useRef<Array<() => void>>([]);
 
-  const handleSelect = (person: Person) => {
-    setSelectedPerson(person);
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchOrgData().then((root) => {
+      if (!isMounted) return;
+      const { tree, treeParams } = buildTreeMakerData(root);
+
+      Object.assign(treeParams, {
+        card_width: 120,
+        card_height: 70,
+        level_spacing: 90,
+        sibling_spacing: 40,
+      });
+
+      const container = document.getElementById("org-tree-container");
+      if (container) container.innerHTML = "";
+
+      treeMaker(tree, {
+        id: "org-tree-container",
+        treeParams,
+        clickable: true,
+        card_click: (el: any) => {
+          const maybeId =
+            (typeof el === "object" && el !== null && (el.id || el.ID || el.key)) ||
+            null;
+          if (maybeId && treeParams[maybeId]) {
+            setSelectedPerson(treeParams[maybeId].person);
+          }
+        },
+        link_width: "3px",
+        link_color: "#0d6efd",
+      });
+
+      setTimeout(() => {
+        const nodes = Array.from(
+          document.querySelectorAll<HTMLElement>(".tree__container__step__card")
+        );
+
+        if (nodes.length === 0) {
+          const alt = Array.from(document.querySelectorAll<HTMLElement>("[id]"));
+          const filtered = alt.filter((el) => {
+            const id = el.id;
+            if (!id) return false;
+            return (
+              id === "tree__container__step__card__first" ||
+              /^\d+$/.test(id) ||
+              /^node-/.test(id)
+            );
+          });
+          filtered.forEach((n) => nodes.push(n));
+        }
+
+        nodes.forEach((node) => {
+          const handler = () => {
+            const id =
+              node.id ||
+              node.getAttribute("data-id") ||
+              node.getAttribute("data-node-id") ||
+              node.getAttribute("data-key") ||
+              node.dataset?.id ||
+              node.dataset?.nodeId ||
+              null;
+
+            let person: Person | undefined;
+
+            if (id && (treeParams as any)[id]) {
+              person = (treeParams as any)[id].person;
+            } else if (!id) {
+              const text = node.innerText?.trim();
+              if (text) {
+                for (const k of Object.keys(treeParams)) {
+                  const t = (treeParams as any)[k].trad;
+                  if (t && String(t).includes(text.split("\n")[0])) {
+                    person = (treeParams as any)[k].person;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (person) {
+              setSelectedPerson(person);
+            } else {
+              console.warn("Clicked node but could not resolve person id. node:", node);
+            }
+          };
+
+          node.style.pointerEvents = "auto";
+          node.style.cursor = "pointer";
+          node.addEventListener("click", handler);
+
+          listenersRef.current.push(() => node.removeEventListener("click", handler));
+        });
+
+        console.log("Attached click listeners to nodes:", nodes.map((n) => n.id));
+      }, 50);
+    });
+
+    return () => {
+      isMounted = false;
+      listenersRef.current.forEach((fn) => fn());
+      listenersRef.current = [];
+    };
+  }, []);
 
   return (
     <div style={{ padding: "50px" }}>
       <h1>Company Org Tree</h1>
 
       <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
-        <div style={{ flex: 1 }}>
-          <TreeNode person={orgData} onSelect={handleSelect} />
+        <div
+          style={{
+            flex: 2,
+            maxWidth: "100%",
+            overflowX: "auto",
+            overflowY: "hidden",
+            paddingBottom: "15px",
+            border: "1px solid #ddd",
+            position: "relative",
+          }}
+        >
+          <div id="org-tree-container" />
         </div>
 
         <div
@@ -162,6 +191,4 @@ const OrgTree: React.FC = () => {
       </button>
     </div>
   );
-};
-
-export default OrgTree;
+}

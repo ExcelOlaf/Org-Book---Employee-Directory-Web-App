@@ -111,7 +111,7 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 0 var(--spacing-md) 0;
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-  color: var(--text-primary);
+  color: var(--text-header);
 }
 
 h1 { font-size: var(--font-size-4xl); }
@@ -194,8 +194,9 @@ label {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
+    --text-header: #f1f5f9;
+    --text-primary: #11161c;
+    --text-secondary: #1b222c;
     --text-muted: #64748b;
     --border-light: #334155;
     --border-medium: #475569;
