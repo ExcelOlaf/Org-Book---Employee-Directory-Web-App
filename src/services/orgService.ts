@@ -5,6 +5,7 @@ export interface Person {
   name: string;
   title: string;
   reports?: Person[];
+  managerId?: number;
 }
 
 /** Temporary static org data (replace later with API call) */
@@ -17,21 +18,24 @@ const orgData: Person = {
       id: 2,
       name: "Bob Smith",
       title: "VP of Engineering",
+      managerId: 1,
       reports: [
-        { id: 4, name: "Carol Lee", title: "Engineering Manager", reports: [] },
-        { id: 5, name: "David Kim", title: "QA Lead", reports: [] },
+        { id: 4, name: "Carol Lee", title: "Engineering Manager", managerId: 2, reports: [] },
+        { id: 5, name: "David Kim", title: "QA Lead", managerId: 2, reports: [] },
       ],
     },
     {
       id: 3,
       name: "Eve Martin",
       title: "VP of Marketing",
+      managerId: 1,
       reports: [
-        { id: 6, name: "Frank Wright", title: "Marketing Manager", reports: [] }
+        { id: 6, name: "Frank Wright", title: "Marketing Manager", managerId: 3, reports: [] }
       ],
     },
   ],
 };
+
 
 /** Recursive search helper */
 export function findPersonById(person: Person, id: number): Person | null {
