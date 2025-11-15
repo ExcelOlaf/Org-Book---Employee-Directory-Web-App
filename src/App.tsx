@@ -11,15 +11,10 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* 🔹 Auth & Main Pages */}
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* 🔹 Department & Employee Navigation */}
         <Route path="/departments" element={<DepartmentLookup />} />
-        <Route path="/org-tree/:employeeId" element={<OrgTree />} />
-
-        {/* 🔹 Other Utility Pages */}
+        <Route path="/org-tree" element={<OrgTree />} />
         <Route path="/employees" element={<EmployeeSearch />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/person/:id" element={<PersonView />} />

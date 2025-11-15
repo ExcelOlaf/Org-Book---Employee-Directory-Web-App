@@ -1,3 +1,4 @@
+import React from 'react';
 import './App.css';
 
 // Example of how to use the consistent component styles

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import treeMaker from "@roumi/treemaker";
 import "../tree_maker.css";
 
@@ -9,7 +9,6 @@ import { buildTreeMakerData } from "../utils/treeMakerMapper";
 
 export default function OrgTree() {
   const navigate = useNavigate();
-  const { employeeId } = useParams();
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const listenersRef = useRef<Array<() => void>>([]);
 
@@ -108,21 +107,6 @@ export default function OrgTree() {
         });
 
         console.log("Attached click listeners to nodes:", nodes.map((n) => n.id));
-
-        // ✅ Auto-select employee if navigated with ID
-        if (employeeId) {
-          const targetNode = nodes.find((node) =>
-            node.innerText.toLowerCase().includes(employeeId.toLowerCase())
-          );
-          if (targetNode) {
-            targetNode.scrollIntoView({ behavior: "smooth", block: "center" });
-            targetNode.style.outline = "3px solid #007bff";
-            targetNode.style.borderRadius = "8px";
-            setTimeout(() => {
-              targetNode.style.outline = "";
-            }, 2500);
-          }
-        }
       }, 50);
     });
 
@@ -131,7 +115,7 @@ export default function OrgTree() {
       listenersRef.current.forEach((fn) => fn());
       listenersRef.current = [];
     };
-  }, [employeeId]);
+  }, []);
 
   return (
     <div style={{ padding: "50px" }}>
@@ -191,9 +175,8 @@ export default function OrgTree() {
         </div>
       </div>
 
-      {/* ✅ Updated Back Button */}
       <button
-        onClick={() => navigate("/departments")}
+        onClick={() => navigate("/dashboard")}
         style={{
           marginTop: "40px",
           padding: "10px 20px",
@@ -204,7 +187,7 @@ export default function OrgTree() {
           cursor: "pointer",
         }}
       >
-        Back to Departments
+        Back to Dashboard
       </button>
     </div>
   );
