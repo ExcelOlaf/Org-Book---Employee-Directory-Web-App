@@ -27,7 +27,7 @@ export const handler = async (event: S3Event) => {
       }
 
       for (const data of dataArray) {
-        if (!data.EmployeeID) {
+        if (!data.EmployeeID  || !data.FirstName || !data.LastName) {
           console.warn("Skipping item with no EmployeeID:", data);
           continue;
         }
@@ -35,6 +35,8 @@ export const handler = async (event: S3Event) => {
         if (!data.Picture) {
           data.Picture = DEFAULT_PICTURE_URL;
         }
+        data.FirstNameLower = data.FirstName.toLowerCase();
+        data.LastNameLower = data.LastName.toLowerCase();
 
         await dynamo.send(
           new PutItemCommand({
@@ -57,3 +59,4 @@ const streamToString = (stream: any): Promise<string> =>
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
     stream.on('error', reject);
   });
+
