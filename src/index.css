@@ -17,6 +17,7 @@
   /* Text Colors */
   --text-primary: #0f172a;
   --text-secondary: #64748b;
+  --text-header: #0f172a;
   --text-muted: #94a3b8;
   --text-inverse: #ffffff;
   
@@ -79,17 +80,6 @@
   --transition-normal: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
 
-  /* Typography settings */
-  font-family: var(--font-family-primary);
-  line-height: var(--line-height-normal);
-  font-weight: var(--font-weight-normal);
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* === BASE STYLES === */
@@ -104,6 +94,13 @@ body {
   font-family: var(--font-family-primary);
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-normal);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* === TYPOGRAPHY === */
@@ -172,6 +169,32 @@ label {
   padding: var(--spacing-md);
 }
 
+/* === AUTOMATIC TEXT COLOR OVERRIDES FOR LIGHT / DARK BACKGROUNDS === */
+
+/* Light background → dark text */
+.bg-light p,
+.bg-light h1,
+.bg-light h2,
+.bg-light h3,
+.bg-light h4,
+.bg-light h5,
+.bg-light h6,
+.bg-light .auto-text {
+  color: var(--text-primary) !important;
+}
+
+/* Dark background → light text */
+.bg-dark p,
+.bg-dark h1,
+.bg-dark h2,
+.bg-dark h3,
+.bg-dark h4,
+.bg-dark h5,
+.bg-dark h6,
+.bg-dark .auto-text {
+  color: var(--text-inverse) !important;
+}
+
 .text-center { text-align: center; }
 .text-left { text-align: left; }
 .text-right { text-align: right; }
@@ -194,12 +217,15 @@ label {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;
+
     --text-header: #f1f5f9;
-    --text-primary: #11161c;
-    --text-secondary: #1b222c;
-    --text-muted: #64748b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+
     --border-light: #334155;
     --border-medium: #475569;
     --border-dark: #64748b;
   }
 }
+

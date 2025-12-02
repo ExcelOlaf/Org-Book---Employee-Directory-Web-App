@@ -1,150 +1,115 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import treeMaker from "@roumi/treemaker";
-import "../tree_maker.css";
+import { Tree, TreeNode } from "react-organizational-chart";
 
 import { fetchOrgData } from "../services/orgService";
 import type { Person } from "../services/orgService";
-import { buildTreeMakerData } from "../utils/treeMakerMapper";
+
+// Utility: calculate brightness and return text color
+function getTextColor(bgColor: string): string {
+  const hex = bgColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128 ? "#000000" : "#ffffff";
+}
+
+// Reusable Org Node component
+function OrgNode({
+  person,
+  onClick,
+  backgroundColor = "#f0f8ff",
+}: {
+  person: Person;
+  onClick: () => void;
+  backgroundColor?: string;
+}) {
+  const textColor = getTextColor(backgroundColor);
+
+  return (
+    <div
+      className="org-node"
+      onClick={onClick}
+      style={{
+        backgroundColor,
+        color: textColor,
+        borderRadius: "12px",
+      }}
+    >
+      <strong>{person.name}</strong>
+      <br />
+      <small>{person.title}</small>
+    </div>
+  );
+}
 
 export default function OrgTree() {
   const navigate = useNavigate();
+  const [rootPerson, setRootPerson] = useState<Person | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
-  const listenersRef = useRef<Array<() => void>>([]);
+
+  // Grab background from CSS variable
+  const backgroundColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--bg-secondary")
+    .trim();
+
+  const textColor = getTextColor(backgroundColor);
 
   useEffect(() => {
-    let isMounted = true;
-
-    fetchOrgData().then((root) => {
-      if (!isMounted) return;
-      const { tree, treeParams } = buildTreeMakerData(root);
-
-      Object.assign(treeParams, {
-        card_width: 120,
-        card_height: 70,
-        level_spacing: 90,
-        sibling_spacing: 40,
-      });
-
-      const container = document.getElementById("org-tree-container");
-      if (container) container.innerHTML = "";
-
-      treeMaker(tree, {
-        id: "org-tree-container",
-        treeParams,
-        clickable: true,
-        card_click: (el: any) => {
-          const maybeId =
-            (typeof el === "object" && el !== null && (el.id || el.ID || el.key)) ||
-            null;
-          if (maybeId && treeParams[maybeId]) {
-            setSelectedPerson(treeParams[maybeId].person);
-          }
-        },
-        link_width: "3px",
-        link_color: "#0d6efd",
-      });
-
-      setTimeout(() => {
-        const nodes = Array.from(
-          document.querySelectorAll<HTMLElement>(".tree__container__step__card")
-        );
-
-        if (nodes.length === 0) {
-          const alt = Array.from(document.querySelectorAll<HTMLElement>("[id]"));
-          const filtered = alt.filter((el) => {
-            const id = el.id;
-            if (!id) return false;
-            return (
-              id === "tree__container__step__card__first" ||
-              /^\d+$/.test(id) ||
-              /^node-/.test(id)
-            );
-          });
-          filtered.forEach((n) => nodes.push(n));
-        }
-
-        nodes.forEach((node) => {
-          const handler = () => {
-            const id =
-              node.id ||
-              node.getAttribute("data-id") ||
-              node.getAttribute("data-node-id") ||
-              node.getAttribute("data-key") ||
-              node.dataset?.id ||
-              node.dataset?.nodeId ||
-              null;
-
-            let person: Person | undefined;
-
-            if (id && (treeParams as any)[id]) {
-              person = (treeParams as any)[id].person;
-            } else if (!id) {
-              const text = node.innerText?.trim();
-              if (text) {
-                for (const k of Object.keys(treeParams)) {
-                  const t = (treeParams as any)[k].trad;
-                  if (t && String(t).includes(text.split("\n")[0])) {
-                    person = (treeParams as any)[k].person;
-                    break;
-                  }
-                }
-              }
-            }
-
-            if (person) {
-              setSelectedPerson(person);
-            } else {
-              console.warn("Clicked node but could not resolve person id. node:", node);
-            }
-          };
-
-          node.style.pointerEvents = "auto";
-          node.style.cursor = "pointer";
-          node.addEventListener("click", handler);
-
-          listenersRef.current.push(() => node.removeEventListener("click", handler));
-        });
-
-        console.log("Attached click listeners to nodes:", nodes.map((n) => n.id));
-      }, 50);
-    });
-
-    return () => {
-      isMounted = false;
-      listenersRef.current.forEach((fn) => fn());
-      listenersRef.current = [];
-    };
+    fetchOrgData().then((root) => setRootPerson(root));
   }, []);
 
+  const renderTree = (person: Person) => (
+    <TreeNode
+      label={
+        <OrgNode
+          person={person}
+          onClick={() => setSelectedPerson(person)}
+          backgroundColor="#f0f8ff"
+        />
+      }
+      key={person.id}
+    >
+      {person.reports?.map((report) => renderTree(report))}
+    </TreeNode>
+  );
+
   return (
-    <div style={{ padding: "50px" }}>
-      <h1>Company Org Tree</h1>
+    <div
+      className="app"
+      style={{
+        backgroundColor,
+        color: textColor, // ✅ applies globally
+      }}
+    >
+      <h1 className="app-title">Company Org Tree</h1>
 
       <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
-        <div
-          style={{
-            flex: 2,
-            maxWidth: "100%",
-            overflowX: "auto",
-            overflowY: "hidden",
-            paddingBottom: "15px",
-            border: "1px solid #ddd",
-            position: "relative",
-          }}
-        >
-          <div id="org-tree-container" />
+        {/* LEFT: Org Chart */}
+        <div className="card" style={{ flex: 2, minHeight: "500px" }}>
+          {rootPerson ? (
+            <Tree
+              lineWidth={"2px"}
+              lineColor={"#007bff"}
+              lineBorderRadius={"4px"}
+              label={
+                <OrgNode
+                  person={rootPerson}
+                  onClick={() => setSelectedPerson(rootPerson)}
+                  backgroundColor="#f0f8ff"
+                />
+              }
+            >
+              {rootPerson.reports?.map((report) => renderTree(report))}
+            </Tree>
+          ) : (
+            <p>Loading tree…</p>
+          )}
         </div>
 
-        <div
-          style={{
-            flex: 1,
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            padding: "20px",
-            background: "#fafafa",
-          }}
-        >
+        {/* RIGHT: Person Details */}
+        <div className="card" style={{ flex: 1 }}>
           <h3>Person Details</h3>
           {selectedPerson ? (
             <>
@@ -174,21 +139,6 @@ export default function OrgTree() {
           )}
         </div>
       </div>
-
-      <button
-        onClick={() => navigate("/dashboard")}
-        style={{
-          marginTop: "40px",
-          padding: "10px 20px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-        }}
-      >
-        Back to Dashboard
-      </button>
     </div>
   );
 }

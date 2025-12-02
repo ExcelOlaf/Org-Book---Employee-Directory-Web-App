@@ -6,6 +6,15 @@
       }
     },
     "owner": "gavinjones44",
-    "slug": "employee-phonebook"
+    "slug": "employee-phonebook",
+    "android": {
+      "package": "com.gavinjones44.employeephonebook"
+    },
+    "ios": {
+      "bundleIdentifier": "com.gavinjones44.employeephonebook",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
   }
 }
