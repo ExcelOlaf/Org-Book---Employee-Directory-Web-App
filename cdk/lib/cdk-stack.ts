@@ -5,15 +5,15 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import { Construct } from 'constructs';
+import { Duration } from "aws-cdk-lib";
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // tables
+
     const employeeTable = dynamodb.Table.fromTableName(this, "Employee", "Employee");
 
-    // s3 bucket
     const bucket = new s3.Bucket(this, "EmployeeDataBucket", {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
@@ -32,11 +32,16 @@ export class CdkStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: "lambda/put-employees.handler",
       code: lambda.Code.fromAsset("dist/src"),
+
+      timeout: Duration.seconds(60),
+      memorySize: 512,
+
       environment: {
         TABLE_NAME: employeeTable.tableName,
         PRIMARY_KEY: "EmployeeID",
       },
     });
+
     putEmployeesLambda.addPermission("AllowS3Invoke", {
       action: "lambda:InvokeFunction",
       principal: new cdk.aws_iam.ServicePrincipal("s3.amazonaws.com"),
@@ -58,7 +63,21 @@ export class CdkStack extends cdk.Stack {
       code: lambda.Code.fromAsset('dist/src'),
       environment: { TABLE_NAME: employeeTable.tableName }
     });
-    employeeTable.grantReadData(searchEmployeesLambda);
+
+    // Grant Query permission for GSIs
+    searchEmployeesLambda.addToRolePolicy(
+      new cdk.aws_iam.PolicyStatement({
+        effect: cdk.aws_iam.Effect.ALLOW,
+        actions: [
+          'dynamodb:Query',
+          'dynamodb:GetItem',
+        ],
+        resources: [
+          employeeTable.tableArn,
+          `${employeeTable.tableArn}/index/*`, // All GSIs
+        ],
+      })
+    );
 
     // API
     const api = new apigateway.RestApi(this, 'employee-api', {

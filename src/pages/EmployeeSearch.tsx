@@ -1,27 +1,44 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../utils/apiRoute";
 
 type EmployeeData = {
-  name: string;
-  dept: string;
-  title: string;
+  EmployeeID: number;
+  FirstName: string;
+  LastName: string;
+  DepartmentName: string;
+  // title: string;
 };
 
-// Type-safe mock data
-const mockEmployees: Record<string, EmployeeData> = {
-  "1001": { name: "Alex Rivera", dept: "Engineering", title: "Software Engineer" },
-  "1002": { name: "Jamie Lin", dept: "Finance", title: "Analyst" },
-  "1003": { name: "Chris Patel", dept: "HR", title: "Recruiter" },
-};
+type SearchParams = {
+  FirstName?: string;
+  LastName?: string;
+}
+
+async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
+  const url = new URL(`${API_BASE_URL}/employees/search`);
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.append(key, String(value));
+  });
+  const response = await fetch(url.toString());
+  // use authorization later
+
+  if (!response.ok) {
+    return null;
+  }
+  return response.json();
+}
+
 
 export default function EmployeeSearch() {
-  const [employeeId, setEmployeeId] = useState("");
-  const [employee, setEmployee] = useState<EmployeeData | null>(null);
+  const [queryFirstName, setQueryFirstName] = useState("");
+  const [queryLastName, setQueryLastName] = useState("");
+  const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
   const [searched, setSearched] = useState(false);
 
   const handleSearch = async () => {
+    const employeesData = (await searchEmployees({ FirstName: queryFirstName, LastName: queryLastName })) as EmployeeData[];
+    setEmployees(employeesData || null);
     setSearched(true);
-    const result = mockEmployees[employeeId.trim()];
-    setEmployee(result || null);
   };
 
   return (
@@ -29,11 +46,19 @@ export default function EmployeeSearch() {
       <h1 className="text-2xl font-bold mb-4">Employee Lookup</h1>
 
       <div className="flex gap-2">
-        <input
+        <input style={{ color: "white" }}
           type="text"
-          placeholder="Enter Employee ID (e.g., 1001)"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
+          placeholder="First Name:"
+          value={queryFirstName}
+          onChange={(e) => setQueryFirstName(e.target.value)}
+          className="border px-3 py-2 rounded w-64"
+        />
+
+        <input style={{ color: "white" }}
+          type="text"
+          placeholder="Last Name"
+          value={queryLastName}
+          onChange={(e) => setQueryLastName(e.target.value)}
           className="border px-3 py-2 rounded w-64"
         />
 
@@ -46,17 +71,20 @@ export default function EmployeeSearch() {
       </div>
 
       {searched && (
-        <div className="mt-6">
-          {employee ? (
-            <div className="border p-4 rounded bg-gray-50 shadow-sm w-fit">
-              <p><strong>Name:</strong> {employee.name}</p>
-              <p><strong>Department:</strong> {employee.dept}</p>
-              <p><strong>Title:</strong> {employee.title}</p>
-            </div>
-          ) : (
-            <p className="text-red-500">No employee found for ID “{employeeId}”.</p>
-          )}
-        </div>
+        <table style={{ color: "white", width: "50%", textAlign: "center"}}>
+          <thead>
+            <tr>
+              <th>Name</th><th>Department</th><th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {employees?.map((item, index) => (
+              <tr key={index}>
+                <td>{`${item.FirstName} ${item.LastName}`}</td><td>{item.DepartmentName}</td><td>{item.EmployeeID}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
