@@ -141,6 +141,8 @@ export default function Dashboard() {
 
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
+  const [address, setAddress] = useState("");
+  const [age, setAge] = useState<Number>();
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [picture, setPicture] = useState("");
@@ -151,8 +153,9 @@ export default function Dashboard() {
     fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
       .then(res => res.json())
       .then((employee) => {
-        console.log(employee);
         setName(`${employee.FirstName} ${employee.LastName}`);
+        setAge(Number(employee.Age));
+        setAddress(employee.Address);
         setDepartment(employee.DepartmentName);
         setPhone(employee.PhoneNumber);
         setEmail(employee.EmailAddress);
@@ -178,7 +181,9 @@ export default function Dashboard() {
 <div style={sectionTitleStyle}>Basic Info</div>
 <hr style={dividerStyle} />
 <div style={{ ...cardStyle, marginTop: "12px" }}>
+  <p>Age: {String(age)}</p>
   <p>Department: {department}</p>
+  <p>Address: {address}</p>
 </div>
 </section>
  
