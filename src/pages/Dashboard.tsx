@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../utils/apiRoute";
+import { useNavigate } from "react-router-dom";
  
+const PLACEHOLDER_ID = 342588;
+
 const containerStyle: React.CSSProperties = {
 
   width: "100%",
@@ -133,6 +137,34 @@ const smallChipStyle: React.CSSProperties = {
 };
  
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  const [name, setName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [picture, setPicture] = useState("");
+  const [managerID, setManagerID] = useState("");
+  const [managerName, setManagerName] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
+      .then(res => res.json())
+      .then((employee) => {
+        console.log();
+        setName(`${employee.FirstName} ${employee.LastName}`);
+        setDepartment(employee.DepartmentName);
+        setPhone(employee.PhoneNumber);
+        setEmail(employee.EmailAddress);
+        setPicture(employee.Picture);
+        fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`)
+          .then(res => res.json())
+          .then((manager) => {
+            setManagerID(manager.EmployeeID);
+            setManagerName(`${manager.FirstName} ${manager.LastName}`);
+          });
+      });
+  }, []);
 
   return (
 <div style={containerStyle}>
@@ -145,14 +177,20 @@ export default function Dashboard() {
 <section style={{ marginBottom: "24px" }}>
 <div style={sectionTitleStyle}>Basic Info</div>
 <hr style={dividerStyle} />
-<div style={{ ...cardStyle, marginTop: "12px" }} />
+<div style={{ ...cardStyle, marginTop: "12px" }}>
+  <p>Name: {name}</p>
+  <p>Department: {department}</p>
+</div>
 </section>
  
           {/* CONTACT INFO */}
 <section style={{ flex: 1 }}>
 <div style={sectionTitleStyle}>Contact Info</div>
 <hr style={dividerStyle} />
-<div style={{ ...contactAreaStyle, marginTop: "12px" }} />
+<div style={{ ...contactAreaStyle, marginTop: "12px" }}>
+  <p>Phone Number: {phone}</p>
+  <p>Email: {email}</p>
+</div>
 </section>
  
           {/* SOME FW / TBD BOX BOTTOM LEFT AREA (ALIGNED RIGHT IN THAT COLUMN) */}
@@ -182,7 +220,10 @@ export default function Dashboard() {
 </div>
  
           {/* PROFILE CIRCLE */}
-<div style={circleStyle} />
+<div style={circleStyle}>
+  {/* TODO: fix to get actual image */}
+  <img src={picture} alt="photo"></img>
+</div>
  
           {/* 3 SMALL CIRCLES */}
 <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
@@ -190,9 +231,10 @@ export default function Dashboard() {
 <div style={smallChipStyle}>Email</div>
 <div style={smallChipStyle}>Phone</div>
 </div>
- 
+
           {/* REPORTING TO */}
 <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+{managerID && (<div> {/* Only display section if employee has manager */}
 <div
 
               style={{
@@ -223,10 +265,9 @@ export default function Dashboard() {
 
               }}
 >
-<div>Mgr Placeholder 1</div>
-<div>Mgr Placeholder 2</div>
-<div>Mgr Placeholder 3</div>
+<div><a onClick={() => navigate(`/person/${managerID}`)}>{managerName}</a></div>
 </div>
+</div>)}
 </section>
 </div>
 </div>
