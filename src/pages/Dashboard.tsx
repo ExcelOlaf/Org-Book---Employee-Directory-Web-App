@@ -151,7 +151,7 @@ export default function Dashboard() {
     fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
       .then(res => res.json())
       .then((employee) => {
-        console.log();
+        console.log(employee);
         setName(`${employee.FirstName} ${employee.LastName}`);
         setDepartment(employee.DepartmentName);
         setPhone(employee.PhoneNumber);
@@ -178,7 +178,6 @@ export default function Dashboard() {
 <div style={sectionTitleStyle}>Basic Info</div>
 <hr style={dividerStyle} />
 <div style={{ ...cardStyle, marginTop: "12px" }}>
-  <p>Name: {name}</p>
   <p>Department: {department}</p>
 </div>
 </section>
@@ -216,7 +215,7 @@ export default function Dashboard() {
 
           {/* NAME BOX TOP RIGHT */}
 <div style={{ alignSelf: "flex-end" }}>
-<div style={rightNameBoxStyle}>Name</div>
+<div style={rightNameBoxStyle}>{name}</div>
 </div>
  
           {/* PROFILE CIRCLE */}
