@@ -37,7 +37,7 @@ export default function Settings() {
       {/* Theme Setting */}
       <section style={{ marginTop: "30px" }}>
         <h3>Theme</h3>
-        <label style={{ display: "block", marginTop: "8px" }}>
+        <label style={{ color: "white", display: "block", marginTop: "8px" }}>
           <input 
             type="radio"
             name="theme"
@@ -47,7 +47,7 @@ export default function Settings() {
           />
           Light Mode
         </label>
-        <label style={{ display: "block", marginTop: "8px" }}>
+        <label style={{ color: "white", display: "block", marginTop: "8px" }}>
           <input 
             type="radio"
             name="theme"

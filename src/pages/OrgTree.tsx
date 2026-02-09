@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tree, TreeNode } from "react-organizational-chart";
-
 import { fetchOrgData } from "../services/orgService";
 import type { Person } from "../services/orgService";
 
@@ -26,7 +25,6 @@ function OrgNode({
   backgroundColor?: string;
 }) {
   const textColor = getTextColor(backgroundColor);
-
   return (
     <div
       className="org-node"
@@ -34,11 +32,9 @@ function OrgNode({
       style={{
         backgroundColor,
         color: textColor,
-        borderRadius: "12px",
       }}
     >
       <strong>{person.name}</strong>
-      <br />
       <small>{person.title}</small>
     </div>
   );
@@ -48,13 +44,6 @@ export default function OrgTree() {
   const navigate = useNavigate();
   const [rootPerson, setRootPerson] = useState<Person | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
-
-  // Grab background from CSS variable
-  const backgroundColor = getComputedStyle(document.documentElement)
-    .getPropertyValue("--bg-secondary")
-    .trim();
-
-  const textColor = getTextColor(backgroundColor);
 
   useEffect(() => {
     fetchOrgData().then((root) => setRootPerson(root));
@@ -76,18 +65,12 @@ export default function OrgTree() {
   );
 
   return (
-    <div
-      className="app"
-      style={{
-        backgroundColor,
-        color: textColor, // ✅ applies globally
-      }}
-    >
-      <h1 className="app-title">Company Org Tree</h1>
-
-      <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
+    <div className="org-tree">
+      <h1 className="org-tree__title">Company Org Tree</h1>
+      
+      <div className="org-tree__container">
         {/* LEFT: Org Chart */}
-        <div className="card" style={{ flex: 2, minHeight: "500px" }}>
+        <div className="org-tree__chart-section">
           {rootPerson ? (
             <Tree
               lineWidth={"2px"}
@@ -104,38 +87,32 @@ export default function OrgTree() {
               {rootPerson.reports?.map((report) => renderTree(report))}
             </Tree>
           ) : (
-            <p>Loading tree…</p>
+            <p className="org-tree__loading">Loading tree…</p>
           )}
         </div>
 
         {/* RIGHT: Person Details */}
-        <div className="card" style={{ flex: 1 }}>
-          <h3>Person Details</h3>
+        <div className="org-tree__details-section">
+          <h3 className="org-tree__details-title">Person Details</h3>
           {selectedPerson ? (
             <>
-              <p>
-                <strong>Name:</strong> {selectedPerson.name}
-              </p>
-              <p>
-                <strong>Title:</strong> {selectedPerson.title}
-              </p>
+              <div className="org-tree__details-item">
+                <span className="org-tree__details-label">Name:</span>{" "}
+                {selectedPerson.name}
+              </div>
+              <div className="org-tree__details-item">
+                <span className="org-tree__details-label">Title:</span>{" "}
+                {selectedPerson.title}
+              </div>
               <button
+                className="org-tree__button"
                 onClick={() => navigate(`/person/${selectedPerson.id}`)}
-                style={{
-                  marginTop: "10px",
-                  padding: "8px 16px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
               >
                 View Full Profile
               </button>
             </>
           ) : (
-            <p>Select a person to view details.</p>
+            <p className="org-tree__details-item">Select a person to view details.</p>
           )}
         </div>
       </div>

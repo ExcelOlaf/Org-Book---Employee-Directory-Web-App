@@ -46,7 +46,7 @@ export default function EmployeeSearch() {
       <h1 className="text-2xl font-bold mb-4">Employee Lookup</h1>
 
       <div className="flex gap-2">
-        <input style={{ color: "white" }}
+        <input style={{ color: "gray" }}
           type="text"
           placeholder="First Name:"
           value={queryFirstName}
@@ -54,7 +54,7 @@ export default function EmployeeSearch() {
           className="border px-3 py-2 rounded w-64"
         />
 
-        <input style={{ color: "white" }}
+        <input style={{ color: "gray" }}
           type="text"
           placeholder="Last Name"
           value={queryLastName}

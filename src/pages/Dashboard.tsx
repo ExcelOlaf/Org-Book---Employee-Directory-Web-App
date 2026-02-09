@@ -1,239 +1,52 @@
 import React from "react";
- 
-const containerStyle: React.CSSProperties = {
 
-  width: "100%",
-
-  height: "100%",
-
-  boxSizing: "border-box",
-
-};
- 
-const gridStyle: React.CSSProperties = {
-
-  display: "grid",
-
-  gridTemplateColumns: "2fr 1fr", // left big, right skinny
-
-  columnGap: "24px",
-
-  alignItems: "flex-start",
-
-};
- 
-const sectionTitleStyle: React.CSSProperties = {
-
-  fontSize: "20px",
-
-  fontWeight: 600,
-
-  marginBottom: "8px",
-
-};
- 
-const dividerStyle: React.CSSProperties = {
-
-  border: 0,
-
-  borderTop: "1px solid #4b5563",
-
-  margin: 0,
-
-};
- 
-const cardStyle: React.CSSProperties = {
-
-  borderRadius: "8px",
-
-  border: "1px solid #4b5563",
-
-  backgroundColor: "#020617",
-
-  minHeight: "140px",
-
-};
- 
-const contactAreaStyle: React.CSSProperties = {
-
-  ...cardStyle,
-
-  minHeight: "220px",
-
-};
- 
-const fwBoxStyle: React.CSSProperties = {
-
-  ...cardStyle,
-
-  width: "180px",
-
-  height: "140px",
-
-  display: "flex",
-
-  flexDirection: "column",
-
-  alignItems: "center",
-
-  justifyContent: "center",
-
-  marginLeft: "auto",
-
-  marginTop: "24px",
-
-};
- 
-const rightNameBoxStyle: React.CSSProperties = {
-
-  alignSelf: "flex-start",
-
-  borderRadius: "6px",
-
-  border: "1px solid #4b5563",
-
-  padding: "6px 12px",
-
-  marginBottom: "12px",
-
-};
- 
-const circleStyle: React.CSSProperties = {
-
-  width: "160px",
-
-  height: "160px",
-
-  borderRadius: "50%",
-
-  border: "1px solid #4b5563",
-
-  backgroundColor: "#020617",
-
-};
- 
-const smallChipStyle: React.CSSProperties = {
-
-  width: "50px",
-
-  height: "50px",
-
-  borderRadius: "50%",
-
-  border: "1px solid #4b5563",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  justifyContent: "center",
-
-  fontSize: "11px",
-
-};
- 
 export default function Dashboard() {
-
   return (
-<div style={containerStyle}>
-<div style={gridStyle}>
+    <div className="dashboard">
+      <div className="dashboard__grid">
+        <div className="dashboard__left-column">
+          <section className="dashboard__section">
+            <div className="dashboard__section-title">Basic Info</div>
+            <hr className="dashboard__divider" />
+            <div className="dashboard__card" />
+          </section>
 
-        {/* LEFT COLUMN: BASIC INFO + CONTACT INFO + FW/TBD BOX */}
-<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <section className="dashboard__section dashboard__section--flex">
+            <div className="dashboard__section-title">Contact Info</div>
+            <hr className="dashboard__divider" />
+            <div className="dashboard__card dashboard__card--contact" />
+          </section>
 
-          {/* BASIC INFO */}
-<section style={{ marginBottom: "24px" }}>
-<div style={sectionTitleStyle}>Basic Info</div>
-<hr style={dividerStyle} />
-<div style={{ ...cardStyle, marginTop: "12px" }} />
-</section>
- 
-          {/* CONTACT INFO */}
-<section style={{ flex: 1 }}>
-<div style={sectionTitleStyle}>Contact Info</div>
-<hr style={dividerStyle} />
-<div style={{ ...contactAreaStyle, marginTop: "12px" }} />
-</section>
- 
-          {/* SOME FW / TBD BOX BOTTOM LEFT AREA (ALIGNED RIGHT IN THAT COLUMN) */}
-<div style={fwBoxStyle}>
-<div style={{ fontWeight: 600 }}>Fun</div>
-<div style={{ fontSize: "12px", marginTop: "4px" }}>TBD</div>
-</div>
-</div>
- 
-        {/* RIGHT COLUMN: NAME + CIRCLE + ORG/EMAIL/PHONE + REPORTING TO */}
-<div
+          <div className="dashboard__fw-box">
+            <div className="dashboard__fw-title">Fun</div>
+            <div className="dashboard__fw-subtitle">TBD</div>
+          </div>
+        </div>
 
-          style={{
+        <div className="dashboard__right-column">
+          <div className="dashboard__name-wrapper">
+            <div className="dashboard__name-box">Name</div>
+          </div>
 
-            display: "flex",
+          <div className="dashboard__profile-circle" />
 
-            flexDirection: "column",
+          <div className="dashboard__chips">
+            <div className="dashboard__chip">Org</div>
+            <div className="dashboard__chip">Email</div>
+            <div className="dashboard__chip">Phone</div>
+          </div>
 
-            alignItems: "center",
-
-          }}
->
-
-          {/* NAME BOX TOP RIGHT */}
-<div style={{ alignSelf: "flex-end" }}>
-<div style={rightNameBoxStyle}>Name</div>
-</div>
- 
-          {/* PROFILE CIRCLE */}
-<div style={circleStyle} />
- 
-          {/* 3 SMALL CIRCLES */}
-<div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
-<div style={smallChipStyle}>Org</div>
-<div style={smallChipStyle}>Email</div>
-<div style={smallChipStyle}>Phone</div>
-</div>
- 
-          {/* REPORTING TO */}
-<section style={{ alignSelf: "stretch", marginTop: "24px" }}>
-<div
-
-              style={{
-
-                fontSize: "18px",
-
-                fontWeight: 600,
-
-                marginBottom: "6px",
-
-              }}
->
-
-              Reporting To:
-</div>
-<hr style={dividerStyle} />
-<div
-
-              style={{
-
-                marginTop: "12px",
-
-                display: "flex",
-
-                flexDirection: "column",
-
-                gap: "8px",
-
-              }}
->
-<div>Mgr Placeholder 1</div>
-<div>Mgr Placeholder 2</div>
-<div>Mgr Placeholder 3</div>
-</div>
-</section>
-</div>
-</div>
-</div>
-
+          <section className="dashboard__reporting">
+            <div className="dashboard__reporting-title">Reporting To:</div>
+            <hr className="dashboard__divider" />
+            <div className="dashboard__reporting-list">
+              <div>Mgr Placeholder 1</div>
+              <div>Mgr Placeholder 2</div>
+              <div>Mgr Placeholder 3</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
   );
-
 }
-
- 
