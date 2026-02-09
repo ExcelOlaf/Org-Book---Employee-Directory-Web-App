@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
 import { useNavigate } from "react-router-dom";
  
-const PLACEHOLDER_ID = 342588;
+const PLACEHOLDER_ID = 730467;
 
 const containerStyle: React.CSSProperties = {
 
@@ -145,11 +145,23 @@ export default function Dashboard() {
   const [age, setAge] = useState<Number>();
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [picture, setPicture] = useState("");
+  const [picture, setPicture] = useState(undefined);
   const [managerID, setManagerID] = useState("");
   const [managerName, setManagerName] = useState("");
+  const [directReports, setDirectReports] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
+    async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          const res = await fetch(`${API_BASE_URL}/employees/${id}`);
+          const directReport = await res.json();
+          return { id, name: `${directReport.FirstName} ${directReport.LastName}` };
+        })
+      );
+      return results;
+    }
+    
     fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
       .then(res => res.json())
       .then((employee) => {
@@ -166,6 +178,11 @@ export default function Dashboard() {
             setManagerID(manager.EmployeeID);
             setManagerName(`${manager.FirstName} ${manager.LastName}`);
           });
+        const directReportIDs = JSON.parse(employee.DirectReportsList);
+        if (directReportIDs) {
+          getDirectReports(directReportIDs)
+            .then(res => setDirectReports(res));
+        }
       });
   }, []);
 
@@ -273,6 +290,49 @@ export default function Dashboard() {
 </div>
 </div>)}
 </section>
+
+          {/* DIRECT REPORTS */}
+<section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+{directReports && (<div> {/* Only display section if employee has direct reports */}
+<div
+
+              style={{
+
+                fontSize: "18px",
+
+                fontWeight: 600,
+
+                marginBottom: "6px",
+
+              }}
+>
+
+              Direct Reports:
+</div>
+<hr style={dividerStyle} />
+<div
+
+              style={{
+
+                marginTop: "12px",
+
+                display: "flex",
+
+                flexDirection: "column",
+
+                gap: "8px",
+
+              }}
+>
+<div>
+  {directReports.map(directReport => (
+    <div><a key={directReport.id} onClick={() => navigate(`/person/${directReport.id}`)}>{directReport.name}</a></div>
+    ))}
+</div>
+</div>
+</div>)}
+</section>
+
 </div>
 </div>
 </div>
