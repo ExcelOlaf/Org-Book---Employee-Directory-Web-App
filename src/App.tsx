@@ -7,7 +7,6 @@ import DepartmentLookup from "./pages/DepartmentLookup";
 import OrgTree from "./pages/OrgTree";
 import EmployeeSearch from "./pages/EmployeeSearch";
 import Settings from "./pages/Settings";
-import PersonView from "./pages/PersonView";
  
 export default function App() {
   return (
@@ -23,7 +22,7 @@ export default function App() {
     <Route path="/org-tree" element={<OrgTree />} />
     <Route path="/employees" element={<EmployeeSearch />} />
     <Route path="/settings" element={<Settings />} />
-    <Route path="/person/:id" element={<PersonView />} />
+    <Route path="/person/:id" element={<Dashboard />} />
     </Route>
     </Routes>
     </Router>
