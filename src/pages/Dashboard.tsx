@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
  
 const PLACEHOLDER_ID = 730467;
 
@@ -140,6 +140,9 @@ const smallChipStyle: React.CSSProperties = {
  
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string}>(); 
+
+  const employeeId = id ? Number(id) : PLACEHOLDER_ID;
 
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
@@ -151,8 +154,11 @@ export default function Dashboard() {
   const [managerID, setManagerID] = useState("");
   const [managerName, setManagerName] = useState("");
   const [directReports, setDirectReports] = useState<{id: number, name: string}[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
+
     async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
       const results = await Promise.all(
         ids.map(async (id) => {
@@ -164,7 +170,7 @@ export default function Dashboard() {
       return results;
     }
     
-    fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
+    fetch(`${API_BASE_URL}/employees/${employeeId}`)
       .then(res => res.json())
       .then((employee) => {
         setName(`${employee.FirstName} ${employee.LastName}`);
@@ -174,19 +180,37 @@ export default function Dashboard() {
         setPhone(employee.PhoneNumber);
         setEmail(employee.EmailAddress);
         setPicture(employee.Picture);
-        fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`)
+
+        if (employee.ManagerID) {
+          fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`)
           .then(res => res.json())
           .then((manager) => {
             setManagerID(manager.EmployeeID);
             setManagerName(`${manager.FirstName} ${manager.LastName}`);
           });
+        }
+        
         const directReportIDs = JSON.parse(employee.DirectReportsList);
         if (directReportIDs) {
           getDirectReports(directReportIDs)
             .then(res => setDirectReports(res));
         }
+
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching employee data:", error);
+        setLoading(false);
       });
-  }, []);
+  }, [employeeId]);
+
+  if (loading || !id) {
+    return (
+      <div style={{ padding: "50px" }}>
+        <h2>Loading employee details...</h2>
+      </div>
+    );
+  }
 
   return (
 <div style={containerStyle}>
@@ -292,7 +316,12 @@ export default function Dashboard() {
 
               }}
 >
-<div><a onClick={() => navigate(`/person/${managerID}`)}>{managerName}</a></div>
+<div><a 
+        onClick={() => navigate(`/person/${managerID}`)}
+        style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+     >
+      {managerName}
+     </a></div>
 </div>
 </div>)}
 </section>
@@ -332,7 +361,10 @@ export default function Dashboard() {
 >
 <div>
   {directReports.map(directReport => (
-    <div key={directReport.id}><a onClick={() => navigate(`/person/${directReport.id}`)}>{directReport.name}</a></div>
+    <div key={directReport.id}>
+      <a onClick={() => navigate(`/person/${directReport.id}`)} 
+        style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+      >{directReport.name}</a></div>
     ))}
 </div>
 </div>

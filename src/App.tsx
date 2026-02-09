@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Navigate, BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MenuLayout from "./layouts/MenuLayout";
  
 import Login from "./pages/Login";
@@ -17,7 +17,7 @@ export default function App() {
     
             {/* Everything else uses the left sidebar layout */}
     <Route element={<MenuLayout />}>
-    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/dashboard" element={<Navigate to="/person/730467" replace />} />
     <Route path="/departments" element={<DepartmentLookup />} />
     <Route path="/org-tree" element={<OrgTree />} />
     <Route path="/employees" element={<EmployeeSearch />} />
