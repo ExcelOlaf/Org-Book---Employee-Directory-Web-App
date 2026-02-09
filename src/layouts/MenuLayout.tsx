@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
  
 type MenuItem = {
@@ -17,7 +17,7 @@ const menuItems: MenuItem[] = [
 const rootStyle: React.CSSProperties = {
   display: "flex",
   minHeight: "100vh",
-  backgroundColor: "#020617",
+  backgroundColor: "#c0c4d4",
   color: "white",
   fontFamily:
     "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -25,7 +25,7 @@ const rootStyle: React.CSSProperties = {
  
 const sidebarStyle: React.CSSProperties = {
   width: "220px",
-  backgroundColor: "#020617",
+  backgroundColor: "#2cb06a",
   color: "white",
   display: "flex",
   flexDirection: "column",
