@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../utils/apiRoute";
+import { useNavigate } from "react-router-dom";
  
+const PLACEHOLDER_ID = 730467;
+
 const containerStyle: React.CSSProperties = {
 
   width: "100%",
@@ -110,6 +114,8 @@ const circleStyle: React.CSSProperties = {
 
   backgroundColor: "#020617",
 
+  overflow: "hidden",
+
 };
  
 const smallChipStyle: React.CSSProperties = {
@@ -133,6 +139,54 @@ const smallChipStyle: React.CSSProperties = {
 };
  
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  const [name, setName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [address, setAddress] = useState("");
+  const [age, setAge] = useState<Number>();
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [picture, setPicture] = useState(undefined);
+  const [managerID, setManagerID] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [directReports, setDirectReports] = useState<{id: number, name: string}[]>([]);
+
+  useEffect(() => {
+    async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          const res = await fetch(`${API_BASE_URL}/employees/${id}`);
+          const directReport = await res.json();
+          return { id, name: `${directReport.FirstName} ${directReport.LastName}` };
+        })
+      );
+      return results;
+    }
+    
+    fetch(`${API_BASE_URL}/employees/${PLACEHOLDER_ID}`)
+      .then(res => res.json())
+      .then((employee) => {
+        setName(`${employee.FirstName} ${employee.LastName}`);
+        setAge(Number(employee.Age));
+        setAddress(employee.Address);
+        setDepartment(employee.DepartmentName);
+        setPhone(employee.PhoneNumber);
+        setEmail(employee.EmailAddress);
+        setPicture(employee.Picture);
+        fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`)
+          .then(res => res.json())
+          .then((manager) => {
+            setManagerID(manager.EmployeeID);
+            setManagerName(`${manager.FirstName} ${manager.LastName}`);
+          });
+        const directReportIDs = JSON.parse(employee.DirectReportsList);
+        if (directReportIDs) {
+          getDirectReports(directReportIDs)
+            .then(res => setDirectReports(res));
+        }
+      });
+  }, []);
 
   return (
 <div style={containerStyle}>
@@ -145,14 +199,21 @@ export default function Dashboard() {
 <section style={{ marginBottom: "24px" }}>
 <div style={sectionTitleStyle}>Basic Info</div>
 <hr style={dividerStyle} />
-<div style={{ ...cardStyle, marginTop: "12px" }} />
+<div style={{ ...cardStyle, marginTop: "12px" }}>
+  <p>Age: {String(age)}</p>
+  <p>Department: {department}</p>
+  <p>Address: {address}</p>
+</div>
 </section>
  
           {/* CONTACT INFO */}
 <section style={{ flex: 1 }}>
 <div style={sectionTitleStyle}>Contact Info</div>
 <hr style={dividerStyle} />
-<div style={{ ...contactAreaStyle, marginTop: "12px" }} />
+<div style={{ ...contactAreaStyle, marginTop: "12px" }}>
+  <p>Phone Number: {phone}</p>
+  <p>Email: {email}</p>
+</div>
 </section>
  
           {/* SOME FW / TBD BOX BOTTOM LEFT AREA (ALIGNED RIGHT IN THAT COLUMN) */}
@@ -178,11 +239,18 @@ export default function Dashboard() {
 
           {/* NAME BOX TOP RIGHT */}
 <div style={{ alignSelf: "flex-end" }}>
-<div style={rightNameBoxStyle}>Name</div>
+<div style={rightNameBoxStyle}>{name}</div>
 </div>
  
           {/* PROFILE CIRCLE */}
-<div style={circleStyle} />
+<div style={circleStyle}>
+  {/* TODO: fix to get actual image */}
+  <img src={picture} style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  }} alt="photo"></img>
+</div>
  
           {/* 3 SMALL CIRCLES */}
 <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
@@ -190,9 +258,10 @@ export default function Dashboard() {
 <div style={smallChipStyle}>Email</div>
 <div style={smallChipStyle}>Phone</div>
 </div>
- 
+
           {/* REPORTING TO */}
 <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+{managerID && (<div> {/* Only display section if employee has manager */}
 <div
 
               style={{
@@ -223,11 +292,53 @@ export default function Dashboard() {
 
               }}
 >
-<div>Mgr Placeholder 1</div>
-<div>Mgr Placeholder 2</div>
-<div>Mgr Placeholder 3</div>
+<div><a onClick={() => navigate(`/person/${managerID}`)}>{managerName}</a></div>
 </div>
+</div>)}
 </section>
+
+          {/* DIRECT REPORTS */}
+<section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+{directReports && (<div> {/* Only display section if employee has direct reports */}
+<div
+
+              style={{
+
+                fontSize: "18px",
+
+                fontWeight: 600,
+
+                marginBottom: "6px",
+
+              }}
+>
+
+              Direct Reports:
+</div>
+<hr style={dividerStyle} />
+<div
+
+              style={{
+
+                marginTop: "12px",
+
+                display: "flex",
+
+                flexDirection: "column",
+
+                gap: "8px",
+
+              }}
+>
+<div>
+  {directReports.map(directReport => (
+    <div key={directReport.id}><a onClick={() => navigate(`/person/${directReport.id}`)}>{directReport.name}</a></div>
+    ))}
+</div>
+</div>
+</div>)}
+</section>
+
 </div>
 </div>
 </div>

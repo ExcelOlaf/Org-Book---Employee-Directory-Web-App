@@ -19,6 +19,8 @@ export class CdkStack extends cdk.Stack {
       autoDeleteObjects: false,
     });
 
+    const imagesBucket = s3.Bucket.fromBucketName(this, "mployee-data-bucket", "mployee-data-bucket");
+
     // lambdas
     const getEmployeeLambda = new lambda.Function(this, 'GetEmployeeLambda', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -27,6 +29,7 @@ export class CdkStack extends cdk.Stack {
       environment: { TABLE_NAME: employeeTable.tableName }
     });
     employeeTable.grantReadData(getEmployeeLambda);
+    imagesBucket.grantRead(getEmployeeLambda);
 
     const putEmployeesLambda = new lambda.Function(this, "InsertLambda", {
       runtime: lambda.Runtime.NODEJS_22_X,
