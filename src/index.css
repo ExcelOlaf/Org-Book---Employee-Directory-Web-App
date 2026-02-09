@@ -1,5 +1,5 @@
 :root {
-  /* === THEME COLORS (Redesigned for better contrast) === */
+  /* === THEME COLORS === */
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
   --primary-light: #dbeafe;
@@ -12,14 +12,14 @@
   --accent-color: #f59e0b;
   --accent-hover: #d97706;
   
-  /* Background Colors - Better contrast */
+  /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
   --bg-dark: #0f172a;
   --bg-card: #ffffff;
   
-  /* Text Colors - Improved readability */
+  /* Text Colors */
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-header: #0f172a;
