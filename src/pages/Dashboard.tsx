@@ -114,6 +114,8 @@ const circleStyle: React.CSSProperties = {
 
   backgroundColor: "#020617",
 
+  overflow: "hidden",
+
 };
  
 const smallChipStyle: React.CSSProperties = {
@@ -243,7 +245,11 @@ export default function Dashboard() {
           {/* PROFILE CIRCLE */}
 <div style={circleStyle}>
   {/* TODO: fix to get actual image */}
-  <img src={picture} alt="photo"></img>
+  <img src={picture} style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  }} alt="photo"></img>
 </div>
  
           {/* 3 SMALL CIRCLES */}
@@ -326,7 +332,7 @@ export default function Dashboard() {
 >
 <div>
   {directReports.map(directReport => (
-    <div><a key={directReport.id} onClick={() => navigate(`/person/${directReport.id}`)}>{directReport.name}</a></div>
+    <div key={directReport.id}><a onClick={() => navigate(`/person/${directReport.id}`)}>{directReport.name}</a></div>
     ))}
 </div>
 </div>
