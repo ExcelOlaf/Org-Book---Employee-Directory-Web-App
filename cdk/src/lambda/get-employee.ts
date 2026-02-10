@@ -1,7 +1,10 @@
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { dynamo } from "../shared/db-client"
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const tableName = "Employee";
+const imageBucketName = "mployee-data-bucket";
 
 export const handler = async (event: any) => {
   let employeeId = event.pathParameters?.employeeId;
@@ -50,6 +53,14 @@ export const handler = async (event: any) => {
     }
   }
 
+  
+  const command = new GetObjectCommand({
+    Bucket: imageBucketName,
+    Key: result.Item.Picture.split("/").slice(3).join("/"),
+  });
+  const s3 = new S3Client({ region: "us-east-2" });
+  const url = await getSignedUrl(s3, command, { expiresIn: 300 });
+  result.Item.Picture = url;
   return {
     statusCode: 200,
     headers: {
@@ -57,6 +68,7 @@ export const handler = async (event: any) => {
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Allow-Methods": "GET,OPTIONS",
     },
+    
     body: JSON.stringify(result.Item ?? {})
   };
 }

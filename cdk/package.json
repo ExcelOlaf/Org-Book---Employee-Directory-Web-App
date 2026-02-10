@@ -31,7 +31,6 @@
     "@types/aws-lambda": "^8.10.152",
     "@vendia/serverless-express": "^4.12.6",
     "aws-cdk-lib": "2.100.0",
-    "aws-lambda": "^1.0.7",
     "constructs": "^10.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"

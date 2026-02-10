@@ -1,10 +1,14 @@
 // src/pages/Dashboard.tsx
-import * as React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../utils/apiRoute";
+import { useNavigate, useParams } from "react-router-dom";
 import { searchEmployees, type EmployeeData } from "../services/searchService";
 
 type SearchMode = "employee" | "department";
 
-/** ===== Existing dashboard styles (from your original) ===== */
+const PLACEHOLDER_ID = 730467;
+
+/** ===== Shared dashboard styles ===== */
 const containerStyle: React.CSSProperties = {
   width: "100%",
   height: "100%",
@@ -67,7 +71,8 @@ const circleStyle: React.CSSProperties = {
   height: "160px",
   borderRadius: "50%",
   border: "1px solid #4b5563",
-  backgroundColor: "#32343c",
+  backgroundColor: "#020617",
+  overflow: "hidden",
 };
 
 const smallChipStyle: React.CSSProperties = {
@@ -81,7 +86,7 @@ const smallChipStyle: React.CSSProperties = {
   fontSize: "11px",
 };
 
-/** ===== New Top Search Bar styles ===== */
+/** ===== Top Search Bar styles ===== */
 const topSearchWrapStyle: React.CSSProperties = {
   ...cardStyle,
   minHeight: "unset",
@@ -149,64 +154,157 @@ const tableTd: React.CSSProperties = {
 };
 
 export default function Dashboard() {
-  /** --- filter type (the dropdown you drew) --- */
-  const [mode, setMode] = React.useState<SearchMode>("employee");
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
-  /** --- employee search fields --- */
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
+  // If no :id in URL, show placeholder employee.
+  const employeeId = useMemo(() => (id ? Number(id) : PLACEHOLDER_ID), [id]);
 
-  /** --- dept search fields (placeholder for now) --- */
-  const [employeeId, setEmployeeId] = React.useState("");
-  const [deptName, setDeptName] = React.useState("");
+  /** ===== Search UI state ===== */
+  const [mode, setMode] = useState<SearchMode>("employee");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [searchEmployeeId, setSearchEmployeeId] = useState("");
+  const [deptName, setDeptName] = useState("");
 
-  /** --- results / UI state --- */
-  const [employees, setEmployees] = React.useState<EmployeeData[]>([]);
-  const [searched, setSearched] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [employees, setEmployees] = useState<EmployeeData[]>([]);
+  const [searched, setSearched] = useState(false);
+  const [searching, setSearching] = useState(false);
 
-  /** --- selected employee (updates right-side name box) --- */
-  const [selected, setSelected] = React.useState<EmployeeData | null>(null);
+  /** ===== Profile (right/left panels) state ===== */
+  const [name, setName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [address, setAddress] = useState("");
+  const [age, setAge] = useState<number | undefined>(undefined);
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [picture, setPicture] = useState<string | undefined>(undefined);
+
+  const [managerID, setManagerID] = useState<number | null>(null);
+  const [managerName, setManagerName] = useState("");
+  const [directReports, setDirectReports] = useState<{ id: number; name: string }[]>([]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   const clearAll = () => {
     setFirstName("");
     setLastName("");
-    setEmployeeId("");
+    setSearchEmployeeId("");
     setDeptName("");
     setEmployees([]);
     setSearched(false);
-    setSelected(null);
   };
 
   const onModeChange = (next: SearchMode) => {
     setMode(next);
-    clearAll(); // makes it obvious fields change when switching
+    clearAll();
   };
 
   const handleSearch = async () => {
-    setLoading(true);
+    setSearching(true);
     setSearched(false);
-    setSelected(null);
 
-    if (mode === "employee") {
-      const data = await searchEmployees({
-        FirstName: firstName,
-        LastName: lastName,
-      }) as EmployeeData[];
-      setEmployees(data);
-    } else {
-      // Department search placeholder (UI only for now)
-      // You said: no dept search yet. So prove the mode switch works.
-      setEmployees([]);
+    try {
+      if (mode === "employee") {
+        const data = (await searchEmployees({
+          FirstName: firstName,
+          LastName: lastName,
+        })) as EmployeeData[];
+        setEmployees(data);
+      } else {
+        // Department mode placeholder for now (keep UI behavior)
+        // You can wire this later.
+        setEmployees([]);
+      }
+    } finally {
+      setSearched(true);
+      setSearching(false);
+    }
+  };
+
+  /** Fetch profile details for the currently-selected employeeId (from route or placeholder) */
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingProfile(true);
+
+    async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
+      const results = await Promise.all(
+        ids.map(async (rid) => {
+          const res = await fetch(`${API_BASE_URL}/employees/${rid}`);
+          const directReport = await res.json();
+          return { id: rid, name: `${directReport.FirstName} ${directReport.LastName}` };
+        })
+      );
+      return results;
     }
 
-    setSearched(true);
-    setLoading(false);
-  };
+    fetch(`${API_BASE_URL}/employees/${employeeId}`)
+      .then((res) => res.json())
+      .then(async (employee) => {
+        if (cancelled) return;
+
+        setName(`${employee.FirstName} ${employee.LastName}`);
+        setAge(employee.Age !== undefined && employee.Age !== null ? Number(employee.Age) : undefined);
+        setAddress(employee.Address ?? "");
+        setDepartment(employee.DepartmentName ?? "");
+        setPhone(employee.PhoneNumber ?? "");
+        setEmail(employee.EmailAddress ?? "");
+        setPicture(employee.Picture ?? undefined);
+
+        // Manager
+        if (employee.ManagerID) {
+          const mgrRes = await fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          const mgr = await mgrRes.json();
+          if (!cancelled) {
+            setManagerID(Number(mgr.EmployeeID));
+            setManagerName(`${mgr.FirstName} ${mgr.LastName}`);
+          }
+        } else {
+          setManagerID(null);
+          setManagerName("");
+        }
+
+        // Direct reports
+        let ids: number[] = [];
+        try {
+          const raw = employee.DirectReportsList;
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) ids = parsed.map((x) => Number(x)).filter((x) => Number.isFinite(x));
+          }
+        } catch {
+          // ignore parse issues
+        }
+
+        if (ids.length > 0) {
+          const drs = await getDirectReports(ids);
+          if (!cancelled) setDirectReports(drs);
+        } else {
+          setDirectReports([]);
+        }
+
+        if (!cancelled) setLoadingProfile(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching employee data:", error);
+        if (!cancelled) setLoadingProfile(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [employeeId]);
+
+  if (loadingProfile) {
+    return (
+      <div style={{ padding: "50px" }}>
+        <h2>Loading employee details...</h2>
+      </div>
+    );
+  }
 
   return (
     <div style={containerStyle}>
-      {/* ===== TOP SEARCH BAR (as you drew) ===== */}
+      {/* ===== TOP SEARCH BAR ===== */}
       <div style={topSearchWrapStyle}>
         {/* Row 1: two inputs + Search button */}
         <div
@@ -239,8 +337,8 @@ export default function Dashboard() {
               <input
                 style={inputStyle}
                 placeholder="Employee ID"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
+                value={searchEmployeeId}
+                onChange={(e) => setSearchEmployeeId(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <input
@@ -253,12 +351,12 @@ export default function Dashboard() {
             </>
           )}
 
-          <button style={searchBtnStyle} onClick={handleSearch} disabled={loading}>
-            {loading ? "Searching..." : "Search"}
+          <button style={searchBtnStyle} onClick={handleSearch} disabled={searching}>
+            {searching ? "Searching..." : "Search"}
           </button>
         </div>
 
-        {/* Row 2: Filters dropdown (mode switch) + Clear */}
+        {/* Row 2: Filters dropdown + Clear */}
         <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "10px" }}>
           <div style={{ color: "#cbd5e1", fontSize: "12px", width: "60px" }}>Filters:</div>
 
@@ -311,7 +409,7 @@ export default function Dashboard() {
                               cursor: "pointer",
                               fontWeight: 600,
                             }}
-                            onClick={() => setSelected(emp)}
+                            onClick={() => navigate(`/person/${emp.EmployeeID}`)}
                           >
                             View
                           </button>
@@ -333,42 +431,55 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ===== YOUR EXISTING DASHBOARD GRID BELOW (unchanged) ===== */}
+      {/* ===== DASHBOARD GRID (profile view) ===== */}
       <div style={gridStyle}>
-        {/* LEFT COLUMN: BASIC INFO + CONTACT INFO + FW/TBD BOX */}
+        {/* LEFT COLUMN */}
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           {/* BASIC INFO */}
           <section style={{ marginBottom: "24px" }}>
             <div style={sectionTitleStyle}>Basic Info</div>
             <hr style={dividerStyle} />
-            <div style={{ ...cardStyle, marginTop: "12px" }} />
+            <div style={{ ...cardStyle, marginTop: "12px", padding: "12px" }}>
+              <p>Age: {age !== undefined ? String(age) : ""}</p>
+              <p>Department: {department}</p>
+              <p>Address: {address}</p>
+            </div>
           </section>
 
           {/* CONTACT INFO */}
           <section style={{ flex: 1 }}>
             <div style={sectionTitleStyle}>Contact Info</div>
             <hr style={dividerStyle} />
-            <div style={{ ...contactAreaStyle, marginTop: "12px" }} />
+            <div style={{ ...contactAreaStyle, marginTop: "12px", padding: "12px" }}>
+              <p>Phone Number: {phone}</p>
+              <p>Email: {email}</p>
+            </div>
           </section>
 
-          {/* FUN / TBD BOX */}
+          {/* FUN/TBD BOX */}
           <div style={fwBoxStyle}>
             <div style={{ fontWeight: 600 }}>Fun</div>
             <div style={{ fontSize: "12px", marginTop: "4px" }}>TBD</div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: NAME + CIRCLE + ORG/EMAIL/PHONE + REPORTING TO */}
+        {/* RIGHT COLUMN */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           {/* NAME BOX TOP RIGHT */}
           <div style={{ alignSelf: "flex-end" }}>
-            <div style={rightNameBoxStyle}>
-              {selected ? `${selected.FirstName} ${selected.LastName}` : "Name"}
-            </div>
+            <div style={rightNameBoxStyle}>{name}</div>
           </div>
 
           {/* PROFILE CIRCLE */}
-          <div style={circleStyle} />
+          <div style={circleStyle}>
+            {picture ? (
+              <img
+                src={picture}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                alt="photo"
+              />
+            ) : null}
+          </div>
 
           {/* 3 SMALL CIRCLES */}
           <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
@@ -378,17 +489,42 @@ export default function Dashboard() {
           </div>
 
           {/* REPORTING TO */}
-          <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
-            <div style={{ fontSize: "18px", fontWeight: 600, marginBottom: "6px" }}>
-              Reporting To:
-            </div>
-            <hr style={dividerStyle} />
-            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div>Mgr Placeholder 1</div>
-              <div>Mgr Placeholder 2</div>
-              <div>Mgr Placeholder 3</div>
-            </div>
-          </section>
+          {managerID !== null && (
+            <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+              <div style={{ fontSize: "18px", fontWeight: 600, marginBottom: "6px" }}>Reporting To:</div>
+              <hr style={dividerStyle} />
+              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div>
+                  <a
+                    onClick={() => navigate(`/person/${managerID}`)}
+                    style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+                  >
+                    {managerName}
+                  </a>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* DIRECT REPORTS */}
+          {directReports.length > 0 && (
+            <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
+              <div style={{ fontSize: "18px", fontWeight: 600, marginBottom: "6px" }}>Direct Reports:</div>
+              <hr style={dividerStyle} />
+              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {directReports.map((dr) => (
+                  <div key={dr.id}>
+                    <a
+                      onClick={() => navigate(`/person/${dr.id}`)}
+                      style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+                    >
+                      {dr.name}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>
