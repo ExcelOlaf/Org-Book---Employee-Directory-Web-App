@@ -92,7 +92,7 @@ export default function EmployeeSearch() {
                   No employees found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       )}

@@ -446,6 +446,46 @@ button {
   color: var(--text-primary);
 }
 
+/* Dashboard Reporting Section */
+.dashboard__reporting {
+  align-self: stretch;
+  margin-top: var(--spacing-xl);
+}
+
+/* Dashboard Direct Reports Section */
+.dashboard__direct-reports {
+  align-self: stretch;
+  margin-top: var(--spacing-xl);
+}
+
+/* Dashboard Links */
+.dashboard__link {
+  cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: underline;
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+}
+
+.dashboard__link:hover {
+  color: var(--primary-hover);
+}
+
+/* Dashboard Profile Image */
+.dashboard__profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Dashboard Loading State */
+.dashboard__loading {
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
 /* ========================================
    DEPARTMENT LOOKUP STYLES
    ======================================== */
@@ -948,7 +988,7 @@ button {
 .org-tree__details-item {
   margin-bottom: var(--spacing-lg);
   padding: var(--spacing-md);
-  background-color: var(--bg-tertiary);
+  background-color: var(--text-primary);
   border-radius: var(--radius-md);
   border-left: 3px solid var(--primary-color);
 }

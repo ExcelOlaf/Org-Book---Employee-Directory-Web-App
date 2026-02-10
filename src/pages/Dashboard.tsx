@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
 import { useNavigate, useParams } from "react-router-dom";
- 
+
 const PLACEHOLDER_ID = 730467;
- 
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string}>(); 
+  const { id } = useParams<{ id: string }>();
 
   const employeeId = id ? Number(id) : PLACEHOLDER_ID;
 
@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [picture, setPicture] = useState(undefined);
   const [managerID, setManagerID] = useState("");
   const [managerName, setManagerName] = useState("");
-  const [directReports, setDirectReports] = useState<{id: number, name: string}[]>([]);
+  const [directReports, setDirectReports] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,9 +35,9 @@ export default function Dashboard() {
       );
       return results;
     }
-    
+
     fetch(`${API_BASE_URL}/employees/${employeeId}`)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((employee) => {
         setName(`${employee.FirstName} ${employee.LastName}`);
         setAge(Number(employee.Age));
@@ -49,17 +49,16 @@ export default function Dashboard() {
 
         if (employee.ManagerID) {
           fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`)
-          .then(res => res.json())
-          .then((manager) => {
-            setManagerID(manager.EmployeeID);
-            setManagerName(`${manager.FirstName} ${manager.LastName}`);
-          });
+            .then(res => res.json())
+            .then((manager) => {
+              setManagerID(manager.EmployeeID);
+              setManagerName(`${manager.FirstName} ${manager.LastName}`);
+            });
         }
-        
+
         const directReportIDs = JSON.parse(employee.DirectReportsList);
         if (directReportIDs) {
-          getDirectReports(directReportIDs)
-            .then(res => setDirectReports(res));
+          getDirectReports(directReportIDs).then(res => setDirectReports(res));
         }
 
         setLoading(false);
@@ -72,7 +71,7 @@ export default function Dashboard() {
 
   if (loading || !id) {
     return (
-      <div style={{ padding: "50px" }}>
+      <div className="dashboard__loading">
         <h2>Loading employee details...</h2>
       </div>
     );
@@ -85,10 +84,16 @@ export default function Dashboard() {
           <section className="dashboard__section">
             <div className="dashboard__section-title">Basic Info</div>
             <hr className="dashboard__divider" />
-            <div className="dashboard__card" >
-              <p>Age: {String(age)}</p>
-              <p>Department: {department}</p>
-              <p>Address: {address}</p>
+            <div className="dashboard__card">
+              <p>
+                <strong>Age:</strong> {String(age)}
+              </p>
+              <p>
+                <strong>Department:</strong> {department}
+              </p>
+              <p>
+                <strong>Address:</strong> {address}
+              </p>
             </div>
           </section>
 
@@ -96,8 +101,12 @@ export default function Dashboard() {
             <div className="dashboard__section-title">Contact Info</div>
             <hr className="dashboard__divider" />
             <div className="dashboard__card dashboard__card--contact">
-              <p>Phone Number: {phone}</p>
-              <p>Email: {email}</p>
+              <p>
+                <strong>Phone Number:</strong> {phone}
+              </p>
+              <p>
+                <strong>Email:</strong> {email}
+              </p>
             </div>
           </section>
 
@@ -113,11 +122,13 @@ export default function Dashboard() {
           </div>
 
           <div className="dashboard__profile-circle">
-            <img src={picture} style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }} alt="Profile Picture"></img>
+            {picture && (
+              <img
+                src={picture}
+                alt="Profile Picture"
+                className="dashboard__profile-image"
+              />
+            )}
           </div>
 
           <div className="dashboard__chips">
@@ -130,58 +141,37 @@ export default function Dashboard() {
             <div className="dashboard__reporting-title">Reporting To:</div>
             <hr className="dashboard__divider" />
             <div className="dashboard__reporting-list">
-              <div>
-                <a onClick={() => navigate(`/person/${managerID}`)}
-                   style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
-                >
-                  {managerName}
-                </a>
-              </div>
+              {managerName && (
+                <div>
+                  <a
+                    onClick={() => navigate(`/person/${managerID}`)}
+                    className="dashboard__link"
+                  >
+                    {managerName}
+                  </a>
+                </div>
+              )}
             </div>
           </section>
-          <section style={{ alignSelf: "stretch", marginTop: "24px" }}>
-{directReports && (<div> {/* Only display section if employee has direct reports */}
-<div
 
-              style={{
-
-                fontSize: "18px",
-
-                fontWeight: 600,
-
-                marginBottom: "6px",
-
-              }}
->
-
-              Direct Reports:
-</div>
-<hr style={dividerStyle} />
-<div
-
-              style={{
-
-                marginTop: "12px",
-
-                display: "flex",
-
-                flexDirection: "column",
-
-                gap: "8px",
-
-              }}
->
-<div>
-  {directReports.map(directReport => (
-    <div key={directReport.id}>
-      <a onClick={() => navigate(`/person/${directReport.id}`)} 
-        style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
-      >{directReport.name}</a></div>
-    ))}
-</div>
-</div>
-</div>)}
-</section>
+          {directReports && directReports.length > 0 && (
+            <section className="dashboard__direct-reports">
+              <div className="dashboard__reporting-title">Direct Reports:</div>
+              <hr className="dashboard__divider" />
+              <div className="dashboard__reporting-list">
+                {directReports.map((directReport) => (
+                  <div key={directReport.id}>
+                    <a
+                      onClick={() => navigate(`/person/${directReport.id}`)}
+                      className="dashboard__link"
+                    >
+                      {directReport.name}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>
