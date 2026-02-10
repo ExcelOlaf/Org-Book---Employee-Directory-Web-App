@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { useNavigate } from "react-router-dom";
 
 type EmployeeData = {
   EmployeeID: number;
@@ -27,6 +28,8 @@ async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | n
 }
 
 export default function EmployeeSearch() {
+  const navigate = useNavigate();
+
   const [queryFirstName, setQueryFirstName] = useState("");
   const [queryLastName, setQueryLastName] = useState("");
   const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
@@ -78,7 +81,7 @@ export default function EmployeeSearch() {
             {employees && employees.length > 0 ? (
               employees.map((item, index) => (
                 <tr key={index}>
-                  <td>{`${item.FirstName} ${item.LastName}`}</td>
+                  <td><a onClick={() => navigate(`../person/${item.EmployeeID}`)}>{`${item.FirstName} ${item.LastName}`}</a></td>
                   <td>{item.DepartmentName}</td>
                   <td>{item.EmployeeID}</td>
                 </tr>
@@ -89,7 +92,7 @@ export default function EmployeeSearch() {
                   No employees found
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       )}
