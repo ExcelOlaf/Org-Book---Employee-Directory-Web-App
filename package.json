@@ -12,14 +12,22 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "cdk:deploy": "cd cdk && npm run cdk deploy",
-    "cdk:build": "cd cdk && npm run build"
+    "cdk:build": "cd cdk && npm run build",
+    "deploy": "npm run build && npm run cdk:build && npm run cdk:deploy",
+    "deploy:website": "npm run build && aws s3 sync dist/ s3://cdkstack-websitebucket75c24d94-ahbnssiaohf6 --delete && aws cloudfront create-invalidation --distribution-id E3QW4DR71C5NGT --paths \"/*\""
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.902.0",
+    "@aws-sdk/client-s3": "^3.917.0",
     "@aws-sdk/lib-dynamodb": "^3.902.0",
     "@aws-sdk/s3-request-presigner": "^3.985.0",
     "@roumi/treemaker": "^1.2.0",
+    "@types/aws-lambda": "^8.10.152",
+    "@vendia/serverless-express": "^4.12.6",
+    "aws-cdk-lib": "^2.237.0",
     "bootstrap": "^5.3.8",
+    "constructs": "^10.0.0",
+    "cors": "^2.8.5",
     "expo": "^54.0.12",
     "express": "^5.1.0",
     "react": "^19.2.4",
