@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { departments } from "../services/orgService";
 
 export default function DepartmentLookup() {
-  const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const navigate = useNavigate();
 
   return (
