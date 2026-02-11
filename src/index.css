@@ -1101,6 +1101,8 @@ button {
   color: var(--text-primary);
   border-bottom: 1px solid var(--border-light);
   font-size: var(--font-size-base);
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .employee-search__table tbody tr {
