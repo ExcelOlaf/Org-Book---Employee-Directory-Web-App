@@ -78,10 +78,10 @@ export default function Settings() {
       <section className="settings__section">
         <h3 className="settings__section-title">Account Info</h3>
         <p className="settings__info-item">
-          <span className="settings__info-label">Username:</span> user123
+          <span className="settings__info-label">Username:</span> admin
         </p>
         <p className="settings__info-item">
-          <span className="settings__info-label">Email:</span> user@example.com
+          <span className="settings__info-label">Email:</span> admin@example.com
         </p>
         <button className="settings__button">Manage Account</button>
       </section>

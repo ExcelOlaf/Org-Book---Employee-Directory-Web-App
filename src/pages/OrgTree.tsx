@@ -67,7 +67,7 @@ export default function OrgTree() {
   return (
     <div className="org-tree">
       <h1 className="org-tree__title">Company Org Tree</h1>
-      
+
       <div className="org-tree__container">
         {/* LEFT: Org Chart */}
         <div className="org-tree__chart-section">
@@ -98,11 +98,11 @@ export default function OrgTree() {
             <>
               <div className="org-tree__details-item">
                 <span className="org-tree__details-label">Name:</span>{" "}
-                {selectedPerson.name}
+                <span className="org-tree__details-value">{selectedPerson.name}</span>
               </div>
               <div className="org-tree__details-item">
                 <span className="org-tree__details-label">Title:</span>{" "}
-                {selectedPerson.title}
+                <span className="org-tree__details-value">{selectedPerson.title}</span>
               </div>
               <button
                 className="org-tree__button"
