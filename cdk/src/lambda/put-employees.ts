@@ -3,10 +3,14 @@ import { PutCommand, UpdateCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { s3 } from "../shared/s3-client";
 import { S3Event } from "aws-lambda";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 const tableName = "Employee";
 const DEFAULT_PICTURE_URL =
   "https://mployee-data-bucket.s3.us-east-2.amazonaws.com/defaultpfp.png";
+
+const sqs = new SQSClient({ region: process.env.AWS_REGION || "us-east-2" });
+const INVITE_QUEUE_URL = process.env.INVITE_QUEUE_URL;
 
 export const handler = async (event: S3Event) => {
   for (const record of event.Records) {
@@ -87,6 +91,36 @@ export const handler = async (event: S3Event) => {
             );
 
             console.log("Updated existing employee:", data.EmployeeID);
+          }
+        }
+
+        // Only invite when explicit flag is true
+        if (data.SendInvite === true || data.SendInvite === "true") {
+          // Accept multiple possible email field names from input files
+          const email = data.Email || data.email || data.EmployeeEmail || data.EmailAddress || data.emailAddress;
+          if (!email) {
+            console.warn("SendInvite true but no email present for:", data.EmployeeID);
+          } else if (!INVITE_QUEUE_URL) {
+            console.error("INVITE_QUEUE_URL not set; skipping invite for", data.EmployeeID);
+          } else {
+            // Send both `email` and `emailAddress` to be compatible with
+            // consumers that expect either key.
+            const msg = {
+              email,
+              emailAddress: email,
+              group: data.Group || data.group,
+              employeeId: data.EmployeeID,
+              // optionally pass tempPassword or appUrl if needed
+            };
+            try {
+              await sqs.send(new SendMessageCommand({
+                QueueUrl: INVITE_QUEUE_URL,
+                MessageBody: JSON.stringify(msg),
+              }));
+              console.log("Enqueued invite for", email);
+            } catch (e) {
+              console.error("Failed to enqueue invite for", email, e);
+            }
           }
         }
       }

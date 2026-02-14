@@ -8,6 +8,9 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import { Duration } from "aws-cdk-lib";
 
@@ -15,6 +18,12 @@ export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Cognito config (define early so it's available to all lambdas)
+    const userPoolId = this.node.tryGetContext('userPoolId') || process.env.USER_POOL_ID || 'us-east-2_00owBPrPI';
+    const userPoolClientId = this.node.tryGetContext('userPoolClientId') || process.env.USER_POOL_CLIENT_ID || '7a049gl2po684ffq0u70tq4tkb';
+
+    // Reference existing User Pool
+    const userPool = cognito.UserPool.fromUserPoolId(this, 'ExistingUserPool', userPoolId);
 
     const employeeTable = dynamodb.Table.fromTableName(this, "Employee", "Employee");
 
@@ -25,12 +34,29 @@ export class CdkStack extends cdk.Stack {
 
     const imagesBucket = s3.Bucket.fromBucketName(this, "mployee-data-bucket", "mployee-data-bucket");
 
+    // Pre Token Generation Lambda (adds email and groups to access token)
+    const preTokenGenerationLambda = new lambda.Function(this, 'PreTokenGeneration', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'lambda/pre-token-generation.handler',
+      code: lambda.Code.fromAsset('dist/src'),
+    });
+
+    // Grant Cognito permission to invoke this Lambda
+    preTokenGenerationLambda.addPermission('CognitoInvoke', {
+      principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
+      sourceArn: `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`,
+    });
+
     // lambdas
     const getEmployeeLambda = new lambda.Function(this, 'GetEmployeeLambda', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'lambda/get-employee.handler',
       code: lambda.Code.fromAsset('dist/src'),
-      environment: { TABLE_NAME: employeeTable.tableName }
+      environment: { 
+        TABLE_NAME: employeeTable.tableName,
+        USER_POOL_ID: userPoolId,
+        USER_POOL_CLIENT_ID: userPoolClientId,
+      }
     });
     employeeTable.grantReadData(getEmployeeLambda);
     imagesBucket.grantRead(getEmployeeLambda);
@@ -68,7 +94,11 @@ export class CdkStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'lambda/search-employees.handler',
       code: lambda.Code.fromAsset('dist/src'),
-      environment: { TABLE_NAME: employeeTable.tableName }
+      environment: { 
+        TABLE_NAME: employeeTable.tableName,
+        USER_POOL_ID: userPoolId,
+        USER_POOL_CLIENT_ID: userPoolClientId,
+      }
     });
 
     // Grant Query permission for GSIs
@@ -85,6 +115,74 @@ export class CdkStack extends cdk.Stack {
         ],
       })
     );
+    
+    // Create DLQ and main queue for invites
+    const inviteDlq = new sqs.Queue(this, 'InviteDLQ', {
+      queueName: `${this.stackName}-InviteDLQ`,
+      retentionPeriod: cdk.Duration.days(14),
+    });
+    
+    const inviteQueue = new sqs.Queue(this, 'InviteQueue', {
+      queueName: `${this.stackName}-InviteQueue`,
+      visibilityTimeout: cdk.Duration.seconds(120),
+      retentionPeriod: cdk.Duration.days(4),
+      deadLetterQueue: {
+        queue: inviteDlq,
+        maxReceiveCount: 5,
+      },
+    });
+    
+    // Give putEmployeesLambda permission to send messages to the queue
+    inviteQueue.grantSendMessages(putEmployeesLambda);
+    
+    // Add invite queue URL to putEmployeesLambda environment
+    putEmployeesLambda.addEnvironment('INVITE_QUEUE_URL', inviteQueue.queueUrl);
+    
+    // Create invite consumer lambda
+    const inviteConsumerLambda = new lambda.Function(this, 'InviteConsumerLambda', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'lambda/invite-consumer.handler',
+      code: lambda.Code.fromAsset('dist/src'),
+      environment: {
+        USER_POOL_ID: userPoolId,
+        SENDER_EMAIL: this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'drakecofta@outlook.com',
+        APP_URL: process.env.APP_URL || 'https://your-app.example.com',
+      },
+      timeout: cdk.Duration.minutes(1),
+    });
+    
+    // Wire the SQS queue as event source
+    inviteConsumerLambda.addEventSource(new lambdaEventSources.SqsEventSource(inviteQueue, {
+      batchSize: 1, // process one invite at a time for clarity and lower blast radius
+      maxBatchingWindow: cdk.Duration.seconds(10),
+    }));
+    
+    // Grant the consumer permission to consume messages
+    inviteQueue.grantConsumeMessages(inviteConsumerLambda);
+    
+    // Grant the consumer Cognito & SES permissions (restrict resources where possible)
+    const userPoolArn = `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`;
+    inviteConsumerLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminAddUserToGroup",
+      ],
+      resources: [userPoolArn],
+    }));
+    
+    const senderEmail = this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'drakecofta@outlook.com';
+    const senderIdentityArn = `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`;
+    inviteConsumerLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "ses:SendTemplatedEmail",
+      ],
+      resources: [senderIdentityArn],
+    }));
     
     // --------
     // API
@@ -172,6 +270,17 @@ export class CdkStack extends cdk.Stack {
     new cdk.CfnOutput(this, "WebsiteBucketName", {
       value: websiteBucket.bucketName,
       description: "S3 Website Bucket Name",
+    });
+    
+    // Invite Queue and Pre-token Generation Lambda outputs
+    new cdk.CfnOutput(this, 'InviteQueueUrl', { 
+      value: inviteQueue.queueUrl,
+      description: 'SQS Queue URL for employee invites',
+    });
+
+    new cdk.CfnOutput(this, 'PreTokenGenerationLambdaArn', {
+      value: preTokenGenerationLambda.functionArn,
+      description: 'ARN for Pre Token Generation Lambda - Add this to Cognito User Pool Triggers',
     });
     
     //-----------
