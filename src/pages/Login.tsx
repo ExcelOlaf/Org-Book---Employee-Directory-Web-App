@@ -18,7 +18,8 @@ const Login: React.FC = () => {
 
   return (
     <div className="login">
-      <h2 className="login__title">Login</h2>
+      <img src="/OrgBookLogo.png" alt="OrgBook Logo" className="login__logo"/>
+  
       <form className="login__form" onSubmit={handleLogin}>
         <div className="login__field">
           <label className="login__label">Username:</label>
