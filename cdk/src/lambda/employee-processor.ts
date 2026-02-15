@@ -9,7 +9,7 @@ import crypto from "crypto";
 
 const REGION = process.env.AWS_REGION || "us-east-2";
 const USER_POOL_ID = process.env.USER_POOL_ID || "us-east-2_00owBPrPI";
-const SENDER_EMAIL = process.env.SENDER_EMAIL || "drakecofta@outlook.com";
+const SENDER_EMAIL = process.env.SENDER_EMAIL || "noreply@orgbooksd.com";
 const APP_URL = process.env.APP_URL || "https://your-app.example.com/login";
 // Optional: configuration set name to enable SES event publishing (Delivery/Bounce/Complaint)
 const SES_CONFIG_SET = process.env.SES_CONFIG_SET;

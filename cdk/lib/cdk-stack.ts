@@ -145,7 +145,7 @@ export class CdkStack extends cdk.Stack {
       code: lambda.Code.fromAsset('dist/src'),
       environment: {
         USER_POOL_ID: userPoolId,
-        SENDER_EMAIL: this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'drakecofta@outlook.com',
+        SENDER_EMAIL: this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'noreply@orgbooksd.com',
         APP_URL: process.env.APP_URL || 'https://your-app.example.com',
       },
       timeout: cdk.Duration.minutes(1),
@@ -172,7 +172,7 @@ export class CdkStack extends cdk.Stack {
       resources: [userPoolArn],
     }));
     
-    const senderEmail = this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'drakecofta@outlook.com';
+    const senderEmail = this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'noreply@orgbooksd.com';
     const senderIdentityArn = `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`;
     inviteConsumerLambda.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
