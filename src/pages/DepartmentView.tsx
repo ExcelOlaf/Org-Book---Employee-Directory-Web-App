@@ -1,25 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchOrgData, findPeopleByDepartment, departments } from "../services/orgService";
-import type { Person } from "../services/orgService";
+// import { fetchOrgData, findPeopleByDepartment, departments } from "../services/orgService";
+import { API_BASE_URL } from "../utils/apiRoute";
 
 export default function DepartmentView() {
   const navigate = useNavigate();
-  const { deptId } = useParams<{ deptId: string }>();
-  const id = deptId ?? "";
-  const [employees, setEmployees] = useState<Person[]>([]);
+  const { deptId } = useParams<{deptId: string}>();
+  const departmentName = deptId ? decodeURIComponent(deptId) : "";
+  const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: number, LastName: number }[]>([]);
 
   useEffect(() => {
-    async function load() {
-      console.log("deptId:", id);
-      const data = await fetchOrgData();
-      const people = findPeopleByDepartment(data, id);
-      setEmployees(people);
-    }
-    load();
-  }, [id]);
+    fetch(`${API_BASE_URL}/departments/${departmentName}`)
+      .then((res) => res.json())
+      .then((employees) => {
+        setEmployees(employees);
+      });
+  }, []);
 
-  const dept = departments.find((d) => d.id === id);
+  // const dept = departments.find((d) => d.id === id);
 
   return (
     <div className="dept-view">
@@ -28,22 +26,21 @@ export default function DepartmentView() {
       </button>
 
       <h2 className="dept-view__header">
-        {dept ? `${dept.name} Department` : "Department"}
+        {departmentName ? `${departmentName} Department (${employees.length} Employees)` : "Department"}
       </h2>
 
       {employees.length === 0 ? (
         <div className="dept-view__empty">
-          No employees found for department id: <b>{id || "(missing)"}</b>
+          No employees found for department: <b>{departmentName || "(missing)"}</b>
         </div>
       ) : (
         <ul className="dept-view__list">
           {employees.map((emp) => (
-            <li
-              key={emp.id}
+            <li key={emp.EmployeeID}
               className="dept-view__list-item"
-              onClick={() => navigate(`/person/${emp.id}`)}
+              onClick={() => navigate(`/person/${emp.EmployeeID}`)}
             >
-              {emp.name} — {emp.title}
+              {`${emp.FirstName} ${emp.LastName}`}{/*  — {emp.title} */}
             </li>
           ))}
         </ul>

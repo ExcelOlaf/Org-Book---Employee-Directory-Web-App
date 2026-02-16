@@ -49,6 +49,32 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
+    const getDepartmentsLambda = new lambda.Function(this, "GetDepartmentsLambda", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: "lambda/get-departments.handler",
+      code: lambda.Code.fromAsset("dist/src"),
+
+      timeout: Duration.seconds(60),
+
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    });
+    employeeTable.grantReadData(getDepartmentsLambda);
+
+    const getDepartmentEmployeesLambda = new lambda.Function(this, 'GetDepartmentEmployeesLambda', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: "lambda/get-department-employees.handler",
+      code: lambda.Code.fromAsset("dist/src"),
+
+      timeout: Duration.seconds(60),
+
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    })
+    employeeTable.grantReadData(getDepartmentEmployeesLambda);
+
     putEmployeesLambda.addPermission("AllowS3Invoke", {
       action: "lambda:InvokeFunction",
       principal: new cdk.aws_iam.ServicePrincipal("s3.amazonaws.com"),
@@ -85,7 +111,21 @@ export class CdkStack extends cdk.Stack {
         ],
       })
     );
-    
+
+    getDepartmentEmployeesLambda.addToRolePolicy(
+      new cdk.aws_iam.PolicyStatement({
+        effect: cdk.aws_iam.Effect.ALLOW,
+        actions: [
+          'dynamodb:Query',
+          'dynamodb:GetItem',
+        ],
+        resources: [
+          employeeTable.tableArn,
+          `${employeeTable.tableArn}/index/*`, // All GSIs
+        ],
+      })
+    );
+
     // --------
     // API
     const api = new apigateway.RestApi(this, 'employee-api', {
@@ -98,7 +138,11 @@ export class CdkStack extends cdk.Stack {
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda));
-   
+    const departments = api.root.addResource('departments');
+    departments.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentsLambda));
+    const departmentName = departments.addResource('{departmentName}');
+    departmentName.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentEmployeesLambda));
+
     // ----------
     // CLOUDFRONT
     // Create S3 bucket for hosting the React app
@@ -173,7 +217,5 @@ export class CdkStack extends cdk.Stack {
       value: websiteBucket.bucketName,
       description: "S3 Website Bucket Name",
     });
-    
-    //-----------
   }
 }
