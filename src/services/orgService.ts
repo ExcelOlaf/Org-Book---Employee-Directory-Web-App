@@ -23,13 +23,6 @@ export const departments = [
   { id: "qa", name: "QA" },
 ];
 
-const slugifyDepartmentName = (name: string): string => {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "") // remove special chars
-    .replace(/\s+/g, "-");        // spaces -> dashes
-};
 
 /**
  * Fetch departments from API.
@@ -57,7 +50,7 @@ export async function fetchDepartments(): Promise<{ id: string; name: string }[]
 
   // map to {id, name}
   return uniqueNames.map((name) => ({
-    id: slugifyDepartmentName(name),
+    id: name,
     name,
   }));
 }
