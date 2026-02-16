@@ -1,8 +1,16 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { departments } from "../services/orgService";
+import { fetchDepartments } from "../services/orgService";
 
 export default function DepartmentLookup() {
+  console.log("DepartmentLookup UPDATED - running fetchDepartments()");
+  const [departments, setDepartments] = useState<{id:string; name:string}[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchDepartments().then(setDepartments);
+  }, []);
+
 
   return (
     <div className="dept-lookup">
