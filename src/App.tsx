@@ -31,13 +31,48 @@ export default function App() {
               {/* Root redirects to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
-              {/* Routes using the left sidebar layout */}
+              {/* Routes using the left sidebar layout - all protected */}
               <Route element={<MenuLayout />}>
-                <Route path="/dashboard" element={<Navigate to="/person/730467" replace />} />
-                <Route path="/departments" element={<DepartmentLookup />} />
-                <Route path="/departments/:deptId" element={<DepartmentView />} />
-                <Route path="/org-tree" element={<OrgTree />} />
-                <Route path="/employees" element={<EmployeeSearch />} />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <Navigate to="/person/730467" replace />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/departments" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <DepartmentLookup />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/departments/:deptId" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <DepartmentView />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/org-tree" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <OrgTree />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/employees" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <EmployeeSearch />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route 
                   path="/settings" 
                   element={
@@ -46,7 +81,14 @@ export default function App() {
                     </ProtectedRoute>
                   } 
                 />
-                <Route path="/person/:id" element={<Dashboard />} />
+                <Route 
+                  path="/person/:id" 
+                  element={
+                    <ProtectedRoute user={user}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
               </Route>
             </Routes>
           </Router>
