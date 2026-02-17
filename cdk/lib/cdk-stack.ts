@@ -14,7 +14,7 @@ import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import { Duration } from "aws-cdk-lib";
 
-export class CdkStack extends cdk.Stack {
+export class TestStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -146,7 +146,7 @@ export class CdkStack extends cdk.Stack {
       environment: {
         USER_POOL_ID: userPoolId,
         SENDER_EMAIL: this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'noreply@orgbooksd.com',
-        APP_URL: process.env.APP_URL || 'https://your-app.example.com',
+        APP_URL: process.env.APP_URL || 'https://d30qsbldftcem3.cloudfront.net',
       },
       timeout: cdk.Duration.minutes(1),
     });
@@ -172,8 +172,9 @@ export class CdkStack extends cdk.Stack {
       resources: [userPoolArn],
     }));
     
+    // Grant SES permissions for both domain and email identity
+    const domain = 'orgbooksd.com';
     const senderEmail = this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'noreply@orgbooksd.com';
-    const senderIdentityArn = `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`;
     inviteConsumerLambda.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
@@ -181,7 +182,10 @@ export class CdkStack extends cdk.Stack {
         "ses:SendRawEmail",
         "ses:SendTemplatedEmail",
       ],
-      resources: [senderIdentityArn],
+      resources: [
+        `arn:aws:ses:${this.region}:${this.account}:identity/${domain}`,
+        `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`,
+      ],
     }));
     
     // --------

@@ -1,0 +1,10 @@
+[
+  {
+    "EmployeeID": 999999,
+    "FirstName": "Test",
+    "LastName": "Invite",
+    "EmailAddress": "drakec15@icloud.com",
+    "SendInvite": true,
+    "Group": "Employees"
+  }
+]
