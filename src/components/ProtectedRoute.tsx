@@ -26,7 +26,9 @@ export default function ProtectedRoute({
   useEffect(() => {
     const getGroups = async () => {
       try {
-        const session = await fetchAuthSession();
+        // forceRefresh: true forces Amplify to re-validate against Cognito
+        // rather than returning a cached in-memory token
+        const session = await fetchAuthSession({ forceRefresh: true });
         // The ID token is in the tokens
         const idToken = session.tokens?.idToken;
         
