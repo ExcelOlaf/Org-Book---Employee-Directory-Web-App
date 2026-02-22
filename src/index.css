@@ -1275,6 +1275,77 @@ button {
   font-weight: var(--font-weight-medium);
 }
 
+.org-tree__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.org-tree__refresh-btn {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.org-tree__refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.org-tree__error-banner {
+  padding: 12px;
+  background-color: #fee;
+  color: #c00;
+  border-radius: 4px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.org-tree__retry-btn {
+  padding: 6px 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.org-tree__meta {
+  margin-bottom: 12px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.org-tree__show-more {
+  padding: 8px 16px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #495057;
+}
+
+.org-node__root-label {
+  font-size: 0.7em;
+  margin-top: 4px;
+}
+
+.org-node__report-count {
+  font-size: 0.7em;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.org-tree__secondary-btn {
+  margin-top: 8px;
+  background-color: #6c757d;
+}
+
 /* ========================================
    DEPARTMENT VIEW STYLES
    ======================================== */
