@@ -4,6 +4,10 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { Construct } from 'constructs';
 import { Duration } from "aws-cdk-lib";
 
@@ -45,6 +49,32 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
+    const getDepartmentsLambda = new lambda.Function(this, "GetDepartmentsLambda", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: "lambda/get-departments.handler",
+      code: lambda.Code.fromAsset("dist/src"),
+
+      timeout: Duration.seconds(60),
+
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    });
+    employeeTable.grantReadData(getDepartmentsLambda);
+
+    const getDepartmentEmployeesLambda = new lambda.Function(this, 'GetDepartmentEmployeesLambda', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: "lambda/get-department-employees.handler",
+      code: lambda.Code.fromAsset("dist/src"),
+
+      timeout: Duration.seconds(60),
+
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    })
+    employeeTable.grantReadData(getDepartmentEmployeesLambda);
+
     putEmployeesLambda.addPermission("AllowS3Invoke", {
       action: "lambda:InvokeFunction",
       principal: new cdk.aws_iam.ServicePrincipal("s3.amazonaws.com"),
@@ -82,6 +112,21 @@ export class CdkStack extends cdk.Stack {
       })
     );
 
+    getDepartmentEmployeesLambda.addToRolePolicy(
+      new cdk.aws_iam.PolicyStatement({
+        effect: cdk.aws_iam.Effect.ALLOW,
+        actions: [
+          'dynamodb:Query',
+          'dynamodb:GetItem',
+        ],
+        resources: [
+          employeeTable.tableArn,
+          `${employeeTable.tableArn}/index/*`, // All GSIs
+        ],
+      })
+    );
+
+    // --------
     // API
     const api = new apigateway.RestApi(this, 'employee-api', {
       restApiName: 'employee-api',
@@ -93,6 +138,84 @@ export class CdkStack extends cdk.Stack {
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda));
+    const departments = api.root.addResource('departments');
+    departments.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentsLambda));
+    const departmentName = departments.addResource('{departmentName}');
+    departmentName.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentEmployeesLambda));
 
+    // ----------
+    // CLOUDFRONT
+    // Create S3 bucket for hosting the React app
+    const websiteBucket = new s3.Bucket(this, "WebsiteBucket", {
+      publicReadAccess: false,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    // Create Origin Access Identity for CloudFront
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(
+      this,
+      "OAI",
+      {
+        comment: "OAI for website bucket",
+      }
+    );
+
+    // Grant CloudFront read access to the bucket
+    websiteBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: ["s3:GetObject"],
+        resources: [websiteBucket.arnForObjects("*")],
+        principals: [
+          new iam.CanonicalUserPrincipal(
+            originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
+          ),
+        ],
+      })
+    );
+
+    // Create CloudFront distribution
+    const distribution = new cloudfront.Distribution(this, "Distribution", {
+      defaultBehavior: {
+        origin: new origins.S3Origin(websiteBucket, {
+          originAccessIdentity,
+        }),
+        viewerProtocolPolicy:
+          cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+      defaultRootObject: "index.html",
+      errorResponses: [
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: Duration.minutes(5),
+        },
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: Duration.minutes(5),
+        },
+      ],
+    });
+
+    // Output the CloudFront URL
+    new cdk.CfnOutput(this, "DistributionDomainName", {
+      value: distribution.distributionDomainName,
+      description: "CloudFront Distribution Domain Name",
+    });
+
+    new cdk.CfnOutput(this, "DistributionId", {
+      value: distribution.distributionId,
+      description: "CloudFront Distribution ID",
+    });
+
+    new cdk.CfnOutput(this, "WebsiteBucketName", {
+      value: websiteBucket.bucketName,
+      description: "S3 Website Bucket Name",
+    });
   }
 }
