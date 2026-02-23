@@ -872,6 +872,15 @@ button {
   box-shadow: var(--shadow-lg);
 }
 
+.login__logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ========================================
    SETTINGS STYLES
    ======================================== */
