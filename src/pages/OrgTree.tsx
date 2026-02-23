@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tree, TreeNode } from "react-organizational-chart";
-import { 
-  fetchOrgData, 
-  fetchOrgDataFromEmployee, 
-  getTotalReportsCount,
-  clearOrgTreeCache 
+import {
+  fetchOrgData,
+  fetchOrgDataFromEmployee,
+  clearOrgTreeCache,
 } from "../services/orgService";
 import type { Person } from "../services/orgService";
 
 const MAX_VISIBLE_REPORTS = 10;
-
 
 function getTextColor(bgColor: string): string {
   const hex = bgColor.replace("#", "");
@@ -25,7 +23,6 @@ function OrgNode({
   person,
   onClick,
   backgroundColor = "#f0f8ff",
-  isRoot = false,
 }: {
   person: Person;
   onClick: () => void;
@@ -33,8 +30,7 @@ function OrgNode({
   isRoot?: boolean;
 }) {
   const textColor = getTextColor(backgroundColor);
-  const totalReports = getTotalReportsCount(person);
-  
+
   return (
     <div
       className="org-node"
@@ -42,17 +38,10 @@ function OrgNode({
       style={{
         backgroundColor,
         color: textColor,
-        cursor: "pointer",
       }}
     >
       <strong>{person.name}</strong>
       <small>{person.title}</small>
-      {isRoot && <div style={{ fontSize: "0.7em", marginTop: "4px" }}></div>}
-      {totalReports > 0 && (
-        <div style={{ fontSize: "0.7em", marginTop: "4px", opacity: 0.8 }}>
-          {totalReports} report{totalReports !== 1 ? "s" : ""}
-        </div>
-      )}
     </div>
   );
 }
@@ -73,7 +62,7 @@ export default function OrgTree() {
     setLoading(true);
     setError(null);
     try {
-      const root = await fetchOrgData(false);
+      const root = await fetchOrgData(useCache);
       if (root) {
         setRootPerson(root);
         setSelectedPerson(root);
@@ -97,18 +86,6 @@ export default function OrgTree() {
     setSelectedPerson(person);
   };
 
-  const toggleNodeExpansion = (personId: number) => {
-    setExpandedNodes(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(personId)) {
-        newSet.delete(personId);
-      } else {
-        newSet.add(personId);
-      }
-      return newSet;
-    });
-  };
-
   const handleReRootTree = async (employeeId: number) => {
     setLoading(true);
     setError(null);
@@ -130,13 +107,11 @@ export default function OrgTree() {
   };
 
   const renderTree = (person: Person, depth: number = 0) => {
-    const hasReports = person.reports && person.reports.length > 0;
     const hasManyReports = person.reports && person.reports.length > MAX_VISIBLE_REPORTS;
     const isExpanded = expandedNodes.has(person.id);
-    const visibleReports = (isExpanded || !hasManyReports) 
-      ? person.reports 
-      : person.reports?.slice(0, MAX_VISIBLE_REPORTS);
-    
+    const visibleReports =
+      isExpanded || !hasManyReports ? person.reports : person.reports?.slice(0, MAX_VISIBLE_REPORTS);
+
     return (
       <TreeNode
         label={
@@ -150,73 +125,20 @@ export default function OrgTree() {
         key={person.id}
       >
         {visibleReports?.map((report) => renderTree(report, depth + 1))}
-        {hasManyReports && !isExpanded && (
-          <TreeNode
-            label={
-              <div
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#e9ecef",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9em",
-                  color: "#495057"
-                }}
-                onClick={() => toggleNodeExpansion(person.id)}
-              >
-                + Show {person.reports!.length - MAX_VISIBLE_REPORTS} more...
-              </div>
-            }
-          />
-        )}
       </TreeNode>
     );
   };
 
   return (
     <div className="org-tree">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="org-tree__header">
         <h1 className="org-tree__title">Company Org Tree</h1>
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.6 : 1
-          }}
-        >
-          {loading ? "Loading..." : "Refresh"}
-        </button>
       </div>
-      
+
       {error && (
-        <div style={{ 
-          padding: "12px", 
-          backgroundColor: "#fee", 
-          color: "#c00", 
-          borderRadius: "4px",
-          margin: "12px 0",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
+        <div className="org-tree__error">
           <span>{error}</span>
-          <button 
-            onClick={() => loadOrgTree(false)}
-            style={{ 
-              padding: "6px 12px",
-              backgroundColor: "#dc3545",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer"
-            }}
-          >
+          <button onClick={() => loadOrgTree(false)} className="org-tree__error-retry">
             Retry
           </button>
         </div>
@@ -260,35 +182,16 @@ export default function OrgTree() {
                 <span className="org-tree__details-value">{selectedPerson.name}</span>
               </div>
               <div className="org-tree__details-item">
-                <span className="org-tree__details-label">Department:</span>{" "}
+                <span className="org-tree__details-label">Job Title:</span>{" "}
                 <span className="org-tree__details-value">{selectedPerson.title}</span>
               </div>
-              {selectedPerson.reports && selectedPerson.reports.length > 0 && (
-                <div className="org-tree__details-item">
-                  <span className="org-tree__details-label">Direct Reports:</span>{" "}
-                  <span className="org-tree__details-value">{selectedPerson.reports.length}</span>
-                </div>
-              )}
-              {getTotalReportsCount(selectedPerson) > 0 && (
-                <div className="org-tree__details-item">
-                  <span className="org-tree__details-label">Total Reports:</span>{" "}
-                  <span className="org-tree__details-value">{getTotalReportsCount(selectedPerson)}</span>
-                </div>
-              )}
-              <button
-                className="org-tree__button"
-                onClick={() => navigate(`/person/${selectedPerson.id}`)}
-              >
+              <button className="org-tree__button" onClick={() => navigate(`/person/${selectedPerson.id}`)}>
                 View Full Profile
               </button>
-              
+
               {/* Optional: Re-root tree button */}
               {selectedPerson.id !== rootPerson?.id && (
-                <button
-                  className="org-tree__button"
-                  style={{ marginTop: "8px", backgroundColor: "#6c757d" }}
-                  onClick={() => handleReRootTree(selectedPerson.id)}
-                >
+                <button className="org-tree__button org-tree__button--secondary" onClick={() => handleReRootTree(selectedPerson.id)}>
                   View Their Tree
                 </button>
               )}
