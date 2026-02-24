@@ -281,38 +281,6 @@ export async function fetchDepartments(): Promise<{ id: string; name: string }[]
   }));
 }
 
-/** Temporary static org data (replace later with API call) */
-const orgData: Person = {
-  id: 1,
-  name: "Alice Johnson",
-  title: "CEO",
-  reports: [
-    {
-      id: 2,
-      name: "Bob Smith",
-      title: "VP of Engineering",
-      dept: "engineering",
-      managerId: 1,
-      reports: [
-        { id: 4, name: "Carol Lee", title: "Engineering Manager", dept: "engineering", managerId: 2, reports: [] },
-        { id: 5, name: "David Kim", title: "QA Lead", dept: "qa", managerId: 2, reports: [] },
-        { id: 6, name: "Extol Olaf", title: "IT Lead", dept: "it", managerId: 2, reports: [] },
-      ],
-    },
-    {
-      id: 3,
-      name: "Eve Martin",
-      title: "VP of Marketing",
-      dept: "business",
-      managerId: 1,
-      reports: [
-        { id: 7, name: "Frank Wright", title: "Sales Manager", dept: "sales", managerId: 3, reports: [] },
-        { id: 8, name: "Lisa Walker", title: "HR Manager", dept: "hr", managerId: 3, reports: [] },
-      ],
-    },
-  ],
-};
-
 /** Recursive search helper */
 export function findPersonById(person: Person, id: number): Person | null {
   if (person.id === id) return person;

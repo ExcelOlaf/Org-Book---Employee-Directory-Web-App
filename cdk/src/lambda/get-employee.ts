@@ -1,7 +1,8 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { dynamo } from "../shared/db-client"
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3 } from "../shared/s3-client";
 
 const tableName = "Employee";
 const imageBucketName = "mployee-data-bucket";
@@ -58,7 +59,6 @@ export const handler = async (event: any) => {
     Bucket: imageBucketName,
     Key: result.Item.Picture.split("/").slice(3).join("/"),
   });
-  const s3 = new S3Client({ region: "us-east-2" });
   const url = await getSignedUrl(s3, command, { expiresIn: 300 });
   result.Item.Picture = url;
   return {

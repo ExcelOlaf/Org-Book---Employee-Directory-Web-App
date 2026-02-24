@@ -22,7 +22,7 @@
     "@aws-sdk/client-dynamodb": "^3.902.0",
     "@aws-sdk/client-s3": "^3.917.0",
     "@aws-sdk/lib-dynamodb": "^3.902.0",
-    "@aws-sdk/s3-request-presigner": "^3.985.0",
+    "@aws-sdk/s3-request-presigner": "^3.990.0",
     "@roumi/treemaker": "^1.2.0",
     "@types/aws-lambda": "^8.10.152",
     "@vendia/serverless-express": "^4.12.6",
@@ -61,6 +61,7 @@
     "vite": "^7.1.6"
   },
   "overrides": {
-    "ajv": ">=8.18.0"
+    "ajv": ">=8.18.0",
+    "@smithy/types": "^4.12.1"
   }
 }

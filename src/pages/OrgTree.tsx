@@ -133,12 +133,13 @@ export default function OrgTree() {
     <div className="org-tree">
       <div className="org-tree__header">
         <h1 className="org-tree__title">Company Org Tree</h1>
+          <button onClick={handleRefresh} className="org-tree__button">Refresh</button>
       </div>
 
       {error && (
         <div className="org-tree__error">
           <span>{error}</span>
-          <button onClick={() => loadOrgTree(false)} className="org-tree__error-retry">
+          <button onClick={handleRefresh} className="org-tree__error-retry">
             Retry
           </button>
         </div>

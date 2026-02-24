@@ -13,6 +13,7 @@ const PersonView: React.FC = () => {
     if (id) fetchPersonById(Number(id)).then(setPerson);
 
     fetchOrgData().then((root) => {
+      if (!root) return;
       const list: Person[] = [];
       const walk = (p: Person) => {
         list.push(p);
