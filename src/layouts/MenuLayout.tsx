@@ -1,4 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../App";
 
 type MenuItem = {
   name: string;
@@ -16,6 +17,12 @@ const menuItems: MenuItem[] = [
 export default function MenuLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="menu-layout">
@@ -38,6 +45,17 @@ export default function MenuLayout() {
             );
           })}
         </nav>
+
+        <div className="menu-layout__footer">
+          {user && (
+            <span className="menu-layout__user">
+              {user.username ?? user.signInDetails?.loginId ?? ""}
+            </span>
+          )}
+          <button className="menu-layout__button" onClick={handleSignOut}>
+            Sign Out
+          </button>
+        </div>
       </aside>
 
       <main className="menu-layout__main">
