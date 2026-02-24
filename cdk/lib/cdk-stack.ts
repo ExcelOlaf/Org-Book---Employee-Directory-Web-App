@@ -11,6 +11,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { Duration } from "aws-cdk-lib";
 
@@ -46,6 +47,49 @@ export class CdkStack extends cdk.Stack {
       principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
       sourceArn: `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`,
     });
+
+    // Automatically wire the pre-token generation trigger on the User Pool so
+    // the ARN stays in sync after every CDK deployment (avoids AccessDeniedException
+    // caused by Cognito still pointing at a stale Lambda ARN).
+    const userPoolArn = `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`;
+    const preTokenTriggerUpdate = new cr.AwsCustomResource(this, 'SetPreTokenTrigger', {
+      onCreate: {
+        service: 'CognitoIdentityServiceProvider',
+        action: 'updateUserPool',
+        parameters: {
+          UserPoolId: userPoolId,
+          LambdaConfig: {
+            PreTokenGenerationConfig: {
+              LambdaArn: preTokenGenerationLambda.functionArn,
+              LambdaVersion: 'V2_0',
+            },
+          },
+        },
+        physicalResourceId: cr.PhysicalResourceId.of('SetPreTokenTrigger'),
+      },
+      onUpdate: {
+        service: 'CognitoIdentityServiceProvider',
+        action: 'updateUserPool',
+        parameters: {
+          UserPoolId: userPoolId,
+          LambdaConfig: {
+            PreTokenGenerationConfig: {
+              LambdaArn: preTokenGenerationLambda.functionArn,
+              LambdaVersion: 'V2_0',
+            },
+          },
+        },
+        physicalResourceId: cr.PhysicalResourceId.of('SetPreTokenTrigger'),
+      },
+      policy: cr.AwsCustomResourcePolicy.fromStatements([
+        new iam.PolicyStatement({
+          actions: ['cognito-idp:UpdateUserPool'],
+          resources: [userPoolArn],
+        }),
+      ]),
+    });
+    // Ensure the Lambda permission exists before we register the trigger
+    preTokenTriggerUpdate.node.addDependency(preTokenGenerationLambda);
 
     // lambdas
     const getEmployeeLambda = new lambda.Function(this, 'GetEmployeeLambda', {
@@ -201,7 +245,6 @@ export class CdkStack extends cdk.Stack {
     inviteQueue.grantConsumeMessages(inviteConsumerLambda);
 
     // Grant the consumer Cognito & SES permissions (restrict resources where possible)
-    const userPoolArn = `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`;
     inviteConsumerLambda.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
@@ -328,7 +371,7 @@ export class CdkStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'PreTokenGenerationLambdaArn', {
       value: preTokenGenerationLambda.functionArn,
-      description: 'ARN for Pre Token Generation Lambda - Add this to Cognito User Pool Triggers',
+      description: 'ARN for Pre Token Generation Lambda (Cognito trigger is configured automatically by CDK)',
     });
 
     //-----------
