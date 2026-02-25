@@ -35,11 +35,15 @@ export class CdkStack extends cdk.Stack {
 
     const imagesBucket = s3.Bucket.fromBucketName(this, "mployee-data-bucket", "mployee-data-bucket");
 
-    // Pre Token Generation Lambda (adds email and groups to access token)
+    // Pre Token Generation Lambda (adds email, groups, and employeeId to token)
     const preTokenGenerationLambda = new lambda.Function(this, 'PreTokenGeneration', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'lambda/pre-token-generation.handler',
       code: lambda.Code.fromAsset('dist/src'),
+      environment: {
+        TABLE_NAME: 'Employee',
+        USER_POOL_ID: userPoolId,
+      },
     });
 
     // Grant Cognito permission to invoke this Lambda
@@ -47,6 +51,16 @@ export class CdkStack extends cdk.Stack {
       principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
       sourceArn: `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`,
     });
+
+    // Grant DynamoDB read (for random employee assignment)
+    employeeTable.grantReadData(preTokenGenerationLambda);
+
+    // Grant permission to stamp custom:employeeId onto manually-added users
+    preTokenGenerationLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['cognito-idp:AdminUpdateUserAttributes'],
+      resources: [`arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${userPoolId}`],
+    }));
 
     // Automatically wire the pre-token generation trigger on the User Pool so
     // the ARN stays in sync after every CDK deployment (avoids AccessDeniedException
@@ -91,7 +105,30 @@ export class CdkStack extends cdk.Stack {
     // Ensure the Lambda permission exists before we register the trigger
     preTokenTriggerUpdate.node.addDependency(preTokenGenerationLambda);
 
-    // lambdas
+    // Register custom:employeeId schema attribute on the User Pool (safe to re-run;
+    // ignores InvalidParameterException which fires if the attribute already exists).
+    new cr.AwsCustomResource(this, 'AddEmployeeIdAttribute', {
+      onCreate: {
+        service: 'CognitoIdentityServiceProvider',
+        action: 'addCustomAttributes',
+        parameters: {
+          UserPoolId: userPoolId,
+          CustomAttributes: [{
+            Name: 'employeeId',
+            AttributeDataType: 'String',
+            Mutable: true,
+          }],
+        },
+        physicalResourceId: cr.PhysicalResourceId.of('AddEmployeeIdAttribute'),
+        ignoreErrorCodesMatching: 'InvalidParameterException',
+      },
+      policy: cr.AwsCustomResourcePolicy.fromStatements([
+        new iam.PolicyStatement({
+          actions: ['cognito-idp:AddCustomAttributes'],
+          resources: [userPoolArn],
+        }),
+      ]),
+    });
     const getEmployeeLambda = new lambda.Function(this, 'GetEmployeeLambda', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'lambda/get-employee.handler',

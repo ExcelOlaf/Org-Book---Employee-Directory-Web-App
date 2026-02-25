@@ -7,13 +7,14 @@ export const handler = async (event: SQSEvent, _ctx: Context) => {
       const body = typeof record.body === "string" ? JSON.parse(record.body) : record.body;
       const email = body.emailAddress || body.EmailAddress;
       const group = body.group || body.Group;
+      const employeeId = body.employeeId || body.EmployeeID;
       if (!email) {
         console.warn("Skipping invite message without email:", body);
         continue;
       }
 
       // call shared helper
-      await createAndInviteUser(email, { group: group, tempPassword: body.tempPassword, appUrl: body.appUrl });
+      await createAndInviteUser(email, { group: group, tempPassword: body.tempPassword, appUrl: body.appUrl, employeeId });
       console.log(`Invite processed for ${email}`);
     } catch (err: any) {
       console.error("Failed to process invite message", err, "messageBody:", record.body);

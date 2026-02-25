@@ -76,20 +76,24 @@ async function trySetPassword(username: string, poolId: string, password: string
  *
  * Returns { tempPassword } for internal use only (avoid logging in production).
  */
-export async function createAndInviteUser(email: string, opts?: { group?: string; tempPassword?: string; appUrl?: string }) {
+export async function createAndInviteUser(email: string, opts?: { group?: string; tempPassword?: string; appUrl?: string; employeeId?: string | number }) {
   if (!email) throw new Error("email required");
   if (!USER_POOL_ID) throw new Error("USER_POOL_ID env var is missing");
   if (!SENDER_EMAIL) throw new Error("SENDER_EMAIL env var is missing");
 
   // Create user (suppress built-in email)
   try {
+    const userAttributes: { Name: string; Value: string }[] = [
+      { Name: "email", Value: email },
+      { Name: "email_verified", Value: "true" },
+    ];
+    if (opts?.employeeId !== undefined) {
+      userAttributes.push({ Name: "custom:employeeId", Value: String(opts.employeeId) });
+    }
     await cognito.send(new AdminCreateUserCommand({
       UserPoolId: USER_POOL_ID,
       Username: email,
-      UserAttributes: [
-        { Name: "email", Value: email },
-        { Name: "email_verified", Value: "true" },
-      ],
+      UserAttributes: userAttributes,
       MessageAction: "SUPPRESS",
     }));
   } catch (err: any) {

@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { getCurrentUser, signOut as amplifySignOut } from "@aws-amplify/auth";
+import { getCurrentUser, signOut as amplifySignOut, fetchAuthSession } from "@aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 import MenuLayout from "./layouts/MenuLayout";
 
@@ -28,6 +28,26 @@ export const AuthContext = createContext<AuthContextType>({
 
 export function useAuth() {
   return useContext(AuthContext);
+}
+
+// Reads the logged-in user's employeeId claim from the Cognito ID token and
+// redirects to their PersonView. Falls back to a placeholder if the claim is
+// not yet present (e.g. first login before the pre-token Lambda runs).
+function DashboardRedirect() {
+  const [target, setTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchAuthSession()
+      .then((session) => {
+        const payload = session.tokens?.idToken?.payload as Record<string, any> | undefined;
+        const employeeId = payload?.["employeeId"] ?? payload?.["custom:employeeId"];
+        setTarget(employeeId ? `/person/${employeeId}` : "/person/730467");
+      })
+      .catch(() => setTarget("/person/730467"));
+  }, []);
+
+  if (!target) return null; // brief loading pause while token is read
+  return <Navigate to={target} replace />;
 }
 
 // ─── App ───────────────────────────────────────────────────────────────────────
@@ -87,7 +107,7 @@ export default function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute user={user}>
-                  <Navigate to="/person/730467" replace />
+                  <DashboardRedirect />
                 </ProtectedRoute>
               }
             />
