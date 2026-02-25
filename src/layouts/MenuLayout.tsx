@@ -17,7 +17,7 @@ const menuItems: MenuItem[] = [
 export default function MenuLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user: _user, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -47,11 +47,6 @@ export default function MenuLayout() {
         </nav>
 
         <div className="menu-layout__footer">
-          {user && (
-            <span className="menu-layout__user">
-              {user.username ?? user.signInDetails?.loginId ?? ""}
-            </span>
-          )}
           <button className="menu-layout__button" onClick={handleSignOut}>
             Sign Out
           </button>
