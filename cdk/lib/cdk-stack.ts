@@ -267,7 +267,7 @@ export class CdkStack extends cdk.Stack {
       environment: {
         USER_POOL_ID: userPoolId,
         SENDER_EMAIL: this.node.tryGetContext('senderEmail') || process.env.SENDER_EMAIL || 'noreply@orgbooksd.com',
-        APP_URL: process.env.APP_URL || 'https://d2ywwchq35tdbl.cloudfront.net',
+        APP_URL: process.env.APP_URL || 'https://www.orgbooksd.com',
       },
       timeout: cdk.Duration.minutes(1),
     });
