@@ -54,23 +54,25 @@ export default function Dashboard() {
   };
 
   const handleSearch = async () => {
-    setSearching(true);
-    setSearched(false);
+    if (firstName || lastName) {
+      setSearching(true);
+      setSearched(false);
 
-    try {
-      if (mode === "employee") {
-        const data = (await searchEmployees({
-          FirstName: firstName,
-          LastName: lastName,
-        })) as EmployeeData[];
-        setEmployees(data);
-      } else {
-        // Department mode placeholder for now
-        setEmployees([]);
+      try {
+        if (mode === "employee") {
+          const data = (await searchEmployees({
+            FirstName: firstName,
+            LastName: lastName,
+          })) as EmployeeData[];
+          setEmployees(data);
+        } else {
+          // Department mode placeholder for now
+          setEmployees([]);
+        }
+      } finally {
+        setSearched(true);
+        setSearching(false);
       }
-    } finally {
-      setSearched(true);
-      setSearching(false);
     }
   };
 
@@ -244,7 +246,7 @@ export default function Dashboard() {
                         <td>
                           {emp.FirstName} {emp.LastName}
                         </td>
-                        <td>{emp.DepartmentName}</td>
+                        <td><a onClick={() => navigate(`/departments/${emp.DepartmentName}`)}>{emp.DepartmentName}</a></td>
                         <td>{emp.EmployeeID}</td>
                         <td>
                           <button
@@ -284,7 +286,7 @@ export default function Dashboard() {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> {department}
+                <strong>Department:</strong> <a onClick={() => navigate(`/departments/${department}`)}>{department}</a>
               </p>
               <p>
                 <strong>Address:</strong> {address}

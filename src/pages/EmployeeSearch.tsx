@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type EmployeeData = {
   EmployeeID: number;
@@ -17,32 +17,42 @@ type SearchParams = {
 async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
   const url = new URL(`${API_BASE_URL}/employees/search`);
   Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.append(key, String(value));
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
 
   const response = await fetch(url.toString());
-  if (!response.ok) {
-    return null;
-  }
+  if (!response.ok) return null;
   return response.json();
 }
 
 export default function EmployeeSearch() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [queryFirstName, setQueryFirstName] = useState("");
-  const [queryLastName, setQueryLastName] = useState("");
+  const initial = (location.state ?? {}) as { FirstName?: string; LastName?: string };
+
+  const [queryFirstName, setQueryFirstName] = useState(initial.FirstName ?? "");
+  const [queryLastName, setQueryLastName] = useState(initial.LastName ?? "");
   const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
   const [searched, setSearched] = useState(false);
 
   const handleSearch = async () => {
-    const employeesData = (await searchEmployees({
+    const employeesData = await searchEmployees({
       FirstName: queryFirstName,
       LastName: queryLastName,
-    })) as EmployeeData[];
+    });
+
     setEmployees(employeesData || null);
     setSearched(true);
   };
+
+  // OPTIONAL: auto-search if Dashboard passed something in
+  useEffect(() => {
+    if ((initial.FirstName && initial.FirstName.trim() !== "") || (initial.LastName && initial.LastName.trim() !== "")) {
+      handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="employee-search">
@@ -79,9 +89,13 @@ export default function EmployeeSearch() {
           </thead>
           <tbody>
             {employees && employees.length > 0 ? (
-              employees.map((item, index) => (
-                <tr key={index}>
-                  <td><a onClick={() => navigate(`../person/${item.EmployeeID}`)}>{`${item.FirstName} ${item.LastName}`}</a></td>
+              employees.map((item) => (
+                <tr key={item.EmployeeID}>
+                  <td>
+                    <a onClick={() => navigate(`../person/${item.EmployeeID}`)}>
+                      {item.FirstName} {item.LastName}
+                    </a>
+                  </td>
                   <td>{item.DepartmentName}</td>
                   <td>{item.EmployeeID}</td>
                 </tr>
