@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
 import { useNavigate, useParams } from "react-router-dom";
-import { searchEmployees, type EmployeeData } from "../services/searchService";
-
-type SearchMode = "employee" | "department";
 
 const PLACEHOLDER_ID = 730467;
 
@@ -14,18 +11,18 @@ export default function Dashboard() {
   // If no :id in URL, show placeholder employee.
   const employeeId = useMemo(() => (id ? Number(id) : PLACEHOLDER_ID), [id]);
 
-  /** ===== Search UI state ===== */
-  const [mode, setMode] = useState<SearchMode>("employee");
+  /** ===== Minimal search inputs (just to route to EmployeeSearch) ===== */
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [searchEmployeeId, setSearchEmployeeId] = useState("");
-  const [deptName, setDeptName] = useState("");
 
-  const [employees, setEmployees] = useState<EmployeeData[]>([]);
-  const [searched, setSearched] = useState(false);
-  const [searching, setSearching] = useState(false);
+  const goToEmployeeSearch = () => {
+    // Navigate to employee search page and pass initial query
+    navigate("/employees", {
+      state: { FirstName: firstName.trim(), LastName: lastName.trim() },
+    });
+  };
 
-  /** ===== Profile (right/left panels) state ===== */
+  /** ===== Profile state ===== */
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [address, setAddress] = useState("");
@@ -39,44 +36,7 @@ export default function Dashboard() {
   const [directReports, setDirectReports] = useState<{ id: number; name: string }[]>([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
-  const clearAll = () => {
-    setFirstName("");
-    setLastName("");
-    setSearchEmployeeId("");
-    setDeptName("");
-    setEmployees([]);
-    setSearched(false);
-  };
-
-  const onModeChange = (next: SearchMode) => {
-    setMode(next);
-    clearAll();
-  };
-
-  const handleSearch = async () => {
-    if (firstName || lastName) {
-      setSearching(true);
-      setSearched(false);
-
-      try {
-        if (mode === "employee") {
-          const data = (await searchEmployees({
-            FirstName: firstName,
-            LastName: lastName,
-          })) as EmployeeData[];
-          setEmployees(data);
-        } else {
-          // Department mode placeholder for now
-          setEmployees([]);
-        }
-      } finally {
-        setSearched(true);
-        setSearching(false);
-      }
-    }
-  };
-
-  /** Fetch profile details for the currently-selected employeeId (from route or placeholder) */
+  /** Fetch profile details for the currently-selected employeeId */
   useEffect(() => {
     let cancelled = false;
     setLoadingProfile(true);
@@ -159,125 +119,33 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      {/* ===== TOP SEARCH BAR ===== */}
+      {/* ===== TOP SEARCH BAR (SIMPLE) ===== */}
       <div className="dashboard__search">
-        {/* Row 1: two inputs + Search button */}
         <div className="dashboard__search-row">
-          {mode === "employee" ? (
-            <>
-              <input
-                className="dashboard__search-input"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-              <input
-                className="dashboard__search-input"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-            </>
-          ) : (
-            <>
-              <input
-                className="dashboard__search-input"
-                placeholder="Employee ID"
-                value={searchEmployeeId}
-                onChange={(e) => setSearchEmployeeId(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-              <input
-                className="dashboard__search-input"
-                placeholder="Dept Name"
-                value={deptName}
-                onChange={(e) => setDeptName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-            </>
-          )}
-
-          <button className="dashboard__search-button" onClick={handleSearch} disabled={searching}>
-            {searching ? "Searching..." : "Search"}
+          <input
+            className="dashboard__search-input"
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
+          />
+          <input
+            className="dashboard__search-input"
+            placeholder="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
+          />
+          <button className="dashboard__search-button" onClick={goToEmployeeSearch}>
+            Search
           </button>
         </div>
-
-        {/* Row 2: Filters dropdown + Clear */}
-        <div className="dashboard__search-filters">
-          <div className="dashboard__search-label">Filters:</div>
-
-          <select
-            className="dashboard__search-select"
-            value={mode}
-            onChange={(e) => onModeChange(e.target.value as SearchMode)}
-          >
-            <option value="employee">Employee Search</option>
-            <option value="department">Department Search</option>
-          </select>
-
-          <button className="dashboard__search-clear" onClick={clearAll}>
-            Clear
-          </button>
-        </div>
-
-        {/* Results table (employee mode only) */}
-        {searched && mode === "employee" && (
-          <div className="dashboard__search-results">
-            <div className="dashboard__search-results-count">Results: {employees.length}</div>
-
-            {employees.length === 0 ? (
-              <div className="dashboard__search-no-results">No matching employees.</div>
-            ) : (
-              <div className="dashboard__search-table-wrapper">
-                <table className="dashboard__search-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Department</th>
-                      <th>ID</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((emp) => (
-                      <tr key={emp.EmployeeID}>
-                        <td>
-                          {emp.FirstName} {emp.LastName}
-                        </td>
-                        <td><a onClick={() => navigate(`/departments/${emp.DepartmentName}`)}>{emp.DepartmentName}</a></td>
-                        <td>{emp.EmployeeID}</td>
-                        <td>
-                          <button
-                            className="dashboard__search-view-button"
-                            onClick={() => navigate(`/person/${emp.EmployeeID}`)}
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Placeholder message for dept mode */}
-        {searched && mode === "department" && (
-          <div className="dashboard__search-no-results">
-            Department Search is not wired yet — UI only for now.
-          </div>
-        )}
       </div>
 
       {/* ===== DASHBOARD GRID (profile view) ===== */}
       <div className="dashboard__grid">
         {/* LEFT COLUMN */}
         <div className="dashboard__left-column">
-          {/* BASIC INFO */}
           <section className="dashboard__section">
             <div className="dashboard__section-title">Basic Info</div>
             <hr className="dashboard__divider" />
@@ -286,7 +154,7 @@ export default function Dashboard() {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> <a onClick={() => navigate(`/departments/${department}`)}>{department}</a>
+                <strong>Department:</strong> {department}
               </p>
               <p>
                 <strong>Address:</strong> {address}
@@ -294,7 +162,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* CONTACT INFO */}
           <section className="dashboard__section dashboard__section--flex">
             <div className="dashboard__section-title">Contact Info</div>
             <hr className="dashboard__divider" />
@@ -308,7 +175,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* FUN/TBD BOX */}
           <div className="dashboard__fw-box">
             <div className="dashboard__fw-title">Fun</div>
             <div className="dashboard__fw-subtitle">TBD</div>
@@ -317,24 +183,20 @@ export default function Dashboard() {
 
         {/* RIGHT COLUMN */}
         <div className="dashboard__right-column">
-          {/* NAME BOX TOP RIGHT */}
           <div className="dashboard__name-wrapper">
             <div className="dashboard__name-box">{name}</div>
           </div>
 
-          {/* PROFILE CIRCLE */}
           <div className="dashboard__profile-circle">
             {picture && <img src={picture} alt="Profile Picture" className="dashboard__profile-image" />}
           </div>
 
-          {/* 3 SMALL CIRCLES */}
           <div className="dashboard__chips">
             <div className="dashboard__chip">Org</div>
             <div className="dashboard__chip">Email</div>
             <div className="dashboard__chip">Phone</div>
           </div>
 
-          {/* REPORTING TO */}
           {managerID !== null && managerName && (
             <section className="dashboard__reporting">
               <div className="dashboard__reporting-title">Reporting To:</div>
@@ -349,7 +211,6 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* DIRECT REPORTS */}
           {directReports && directReports.length > 0 && (
             <section className="dashboard__direct-reports">
               <div className="dashboard__reporting-title">Direct Reports:</div>
