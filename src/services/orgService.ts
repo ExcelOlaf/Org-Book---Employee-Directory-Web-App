@@ -253,9 +253,8 @@ export async function fetchOrgDataFromEmployee(employeeId: number, useCache: boo
 /**
  * Fetch departments from API.
  * Endpoint returns: string[] (e.g., ["Engineering", "Human Resources", ...])
- * We convert to: {id, name}[] for routing/cards.
  */
-export async function fetchDepartments(): Promise<{ id: string; name: string }[]> {
+export async function fetchDepartments(): Promise<string[]> {
   const res = await fetch(`${API_BASE_URL}/departments`);
 
   if (!res.ok) {
@@ -264,21 +263,9 @@ export async function fetchDepartments(): Promise<{ id: string; name: string }[]
 
   const deptNames = (await res.json()) as string[];
 
-  // normalize + dedupe
-  const uniqueNames = Array.from(
-    new Set(
-      deptNames
-        .filter((n) => typeof n === "string")
-        .map((n) => n.trim())
-        .filter((n) => n.length > 0)
-    )
-  );
-
-  // map to {id, name}
-  return uniqueNames.map((name) => ({
-    id: name,
-    name,
-  }));
+  return deptNames
+    .filter((name): name is string => name !== null)
+    .sort((a, b) => a.localeCompare(b));
 }
 
 /** Recursive search helper */
