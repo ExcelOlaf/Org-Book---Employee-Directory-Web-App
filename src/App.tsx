@@ -128,7 +128,7 @@ export default function App() {
               }
             />
             <Route
-              path="/org-tree"
+              path="/org-tree/:id"
               element={
                 <ProtectedRoute user={user}>
                   <OrgTree />

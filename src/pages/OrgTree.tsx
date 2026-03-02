@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Tree, TreeNode } from "react-organizational-chart";
 import {
-  fetchOrgData,
   fetchOrgDataFromEmployee,
+  fetchPersonById,
   clearOrgTreeCache,
 } from "../services/orgService";
 import type { Person } from "../services/orgService";
 
-const MAX_VISIBLE_REPORTS = 10;
+const LOGGED_IN_EMPLOYEE_ID = 730467;
 
 function getTextColor(bgColor: string): string {
   const hex = bgColor.replace("#", "");
@@ -23,22 +23,20 @@ function OrgNode({
   person,
   onClick,
   backgroundColor = "#f0f8ff",
+  isHighlighted = false,
 }: {
   person: Person;
   onClick: () => void;
   backgroundColor?: string;
-  isRoot?: boolean;
+  isHighlighted?: boolean;
 }) {
   const textColor = getTextColor(backgroundColor);
 
   return (
     <div
-      className="org-node"
+      className={`org-node${isHighlighted ? " org-node--highlighted" : ""}`}
       onClick={onClick}
-      style={{
-        backgroundColor,
-        color: textColor,
-      }}
+      style={{ backgroundColor, color: textColor }}
     >
       <strong>{person.name}</strong>
       <small>{person.title}</small>
@@ -46,26 +44,47 @@ function OrgNode({
   );
 }
 
+interface OrgTreeData {
+  manager: Person | null;
+  siblings: Person[];
+  viewedPersonId: number;
+}
+
 export default function OrgTree() {
   const navigate = useNavigate();
-  const [rootPerson, setRootPerson] = useState<Person | null>(null);
+  const { id } = useParams<{ id: string }>();
+
+  const viewedPersonId = useMemo(
+    () => (id ? Number(id) : LOGGED_IN_EMPLOYEE_ID),
+    [id]
+  );
+
+  const [treeData, setTreeData] = useState<OrgTreeData | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    loadOrgTree();
-  }, []);
+    if (!id) {
+      navigate(`/org-tree/${LOGGED_IN_EMPLOYEE_ID}`, { replace: true });
+    }
+  }, [id, navigate]);
 
-  const loadOrgTree = async (useCache: boolean = true) => {
+  useEffect(() => {
+    if (viewedPersonId) {
+      loadOrgTree(viewedPersonId);
+    }
+  }, [viewedPersonId]);
+
+  const loadOrgTree = async (personId: number, useCache: boolean = true) => {
     setLoading(true);
     setError(null);
     try {
-      const root = await fetchOrgData(useCache);
-      if (root) {
-        setRootPerson(root);
-        setSelectedPerson(root);
+      const data = await buildManagerCenteredTree(personId, useCache);
+      if (data) {
+        setTreeData(data);
+        const viewed = data.siblings.find((s) => s.id === personId) ?? null;
+        setSelectedPerson(viewed);
       } else {
         setError("Unable to load organization tree. Please try again later.");
       }
@@ -77,54 +96,73 @@ export default function OrgTree() {
     }
   };
 
+  const buildManagerCenteredTree = async (
+    personId: number,
+    useCache: boolean = true
+  ): Promise<OrgTreeData | null> => {
+    const viewedPerson = await fetchPersonById(personId);
+    if (!viewedPerson) return null;
+
+    if (!viewedPerson.managerId) {
+      const rootWithReports = await fetchOrgDataFromEmployee(personId, useCache);
+      if (!rootWithReports) return null;
+      return {
+        manager: null,
+        siblings: [rootWithReports],
+        viewedPersonId: personId,
+      };
+    }
+
+    const managerTree = await fetchOrgDataFromEmployee(viewedPerson.managerId, useCache);
+    if (!managerTree) return null;
+
+    return {
+      manager: managerTree,
+      siblings: managerTree.reports ?? [],
+      viewedPersonId: personId,
+    };
+  };
+
   const handleRefresh = () => {
     clearOrgTreeCache();
-    loadOrgTree(false);
+    loadOrgTree(viewedPersonId, false);
   };
 
   const handlePersonClick = (person: Person) => {
     setSelectedPerson(person);
   };
 
-  const handleReRootTree = async (employeeId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const newRoot = await fetchOrgDataFromEmployee(employeeId);
-      if (newRoot) {
-        setRootPerson(newRoot);
-        setSelectedPerson(newRoot);
-        setExpandedNodes(new Set());
-      } else {
-        setError(`Unable to load tree for employee ${employeeId}`);
+  const renderReportNode = (report: Person): React.ReactElement => (
+    <TreeNode
+      key={report.id}
+      label={
+        <OrgNode
+          person={report}
+          onClick={() => handlePersonClick(report)}
+          backgroundColor="#f0f8ff"
+        />
       }
-    } catch (err) {
-      console.error("Error re-rooting tree:", err);
-      setError("An error occurred while loading the tree.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    >
+      {report.reports?.map((subReport) => renderReportNode(subReport))}
+    </TreeNode>
+  );
 
-  const renderTree = (person: Person, depth: number = 0) => {
-    const hasManyReports = person.reports && person.reports.length > MAX_VISIBLE_REPORTS;
-    const isExpanded = expandedNodes.has(person.id);
-    const visibleReports =
-      isExpanded || !hasManyReports ? person.reports : person.reports?.slice(0, MAX_VISIBLE_REPORTS);
+  const renderSiblingWithReports = (sibling: Person) => {
+    const isHighlighted = sibling.id === treeData?.viewedPersonId;
 
     return (
       <TreeNode
+        key={sibling.id}
         label={
           <OrgNode
-            person={person}
-            onClick={() => handlePersonClick(person)}
-            backgroundColor={depth === 0 ? "#d4e8ff" : "#f0f8ff"}
-            isRoot={depth === 0}
+            person={sibling}
+            onClick={() => handlePersonClick(sibling)}
+            backgroundColor={isHighlighted ? "#fef3c7" : "#f0f8ff"}
+            isHighlighted={isHighlighted}
           />
         }
-        key={person.id}
       >
-        {visibleReports?.map((report) => renderTree(report, depth + 1))}
+        {sibling.reports?.map((report) => renderReportNode(report))}
       </TreeNode>
     );
   };
@@ -133,7 +171,6 @@ export default function OrgTree() {
     <div className="org-tree">
       <div className="org-tree__header">
         <h1 className="org-tree__title">Company Org Tree</h1>
-          <button onClick={handleRefresh} className="org-tree__button">Refresh</button>
       </div>
 
       {error && (
@@ -146,53 +183,71 @@ export default function OrgTree() {
       )}
 
       <div className="org-tree__container">
-        {/* LEFT: Org Chart */}
         <div className="org-tree__chart-section">
           {loading ? (
             <p className="org-tree__loading">Loading tree…</p>
-          ) : rootPerson ? (
-            <>
+          ) : treeData ? (
+            treeData.manager ? (
               <Tree
                 lineWidth={"2px"}
                 lineColor={"#007bff"}
                 lineBorderRadius={"4px"}
                 label={
                   <OrgNode
-                    person={rootPerson}
-                    onClick={() => handlePersonClick(rootPerson)}
+                    person={treeData.manager}
+                    onClick={() => handlePersonClick(treeData.manager!)}
                     backgroundColor="#d4e8ff"
-                    isRoot={true}
                   />
                 }
               >
-                {rootPerson.reports?.map((report) => renderTree(report, 1))}
+                {treeData.siblings.map((sibling) => renderSiblingWithReports(sibling))}
               </Tree>
-            </>
+            ) : (
+              <Tree
+                lineWidth={"2px"}
+                lineColor={"#007bff"}
+                lineBorderRadius={"4px"}
+                label={
+                  <OrgNode
+                    person={treeData.siblings[0]}
+                    onClick={() => handlePersonClick(treeData.siblings[0])}
+                    backgroundColor="#fef3c7"
+                    isHighlighted={true}
+                  />
+                }
+              >
+                {treeData.siblings[0].reports?.map((report) => renderReportNode(report))}
+              </Tree>
+            )
           ) : (
             <p className="org-tree__loading">No data available</p>
           )}
         </div>
 
-        {/* RIGHT: Person Details */}
         <div className="org-tree__details-section">
           <h3 className="org-tree__details-title">Person Details</h3>
           {selectedPerson ? (
             <>
               <div className="org-tree__details-item">
-                <span className="org-tree__details-label">Name:</span>{" "}
+                <span className="org-tree__details-label">Name:</span>
                 <span className="org-tree__details-value">{selectedPerson.name}</span>
               </div>
               <div className="org-tree__details-item">
-                <span className="org-tree__details-label">Job Title:</span>{" "}
+                <span className="org-tree__details-label">Job Title:</span>
                 <span className="org-tree__details-value">{selectedPerson.title}</span>
               </div>
-              <button className="org-tree__button" onClick={() => navigate(`/person/${selectedPerson.id}`)}>
+              <button
+                className="org-tree__button"
+                onClick={() => navigate(`/person/${selectedPerson.id}`)}
+              >
                 View Full Profile
               </button>
-
-              {/* Optional: Re-root tree button */}
-              {selectedPerson.id !== rootPerson?.id && (
-                <button className="org-tree__button org-tree__button--secondary" onClick={() => handleReRootTree(selectedPerson.id)}>
+              {selectedPerson.id !== viewedPersonId && (
+                <button
+                  className="org-tree__button org-tree__button--secondary"
+                  style={{ marginTop: "8px" }}
+                  onClick={() => navigate(`/org-tree/${selectedPerson.id}`)}
+                >
                   View Their Tree
                 </button>
               )}

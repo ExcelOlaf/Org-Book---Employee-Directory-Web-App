@@ -192,7 +192,7 @@ export default function Dashboard() {
           </div>
 
           <div className="dashboard__chips">
-            <div className="dashboard__chip">Org</div>
+            <div className="dashboard__chip" onClick={() => navigate(`/org-tree/${employeeId}`)}>Org</div>
             <div className="dashboard__chip">Email</div>
             <div className="dashboard__chip">Phone</div>
           </div>
