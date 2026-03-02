@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 type EmployeeData = {
   EmployeeID: number;
+  Title: string;
   FirstName: string;
   LastName: string;
   DepartmentName: string;
@@ -83,6 +84,7 @@ export default function EmployeeSearch() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Title</th>
               <th>Department</th>
               <th>ID</th>
             </tr>
@@ -96,6 +98,7 @@ export default function EmployeeSearch() {
                       {item.FirstName} {item.LastName}
                     </a>
                   </td>
+                  <td>{item.Title}</td>
                   <td>{item.DepartmentName}</td>
                   <td>{item.EmployeeID}</td>
                 </tr>

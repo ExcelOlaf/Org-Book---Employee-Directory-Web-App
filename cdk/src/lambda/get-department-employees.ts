@@ -31,10 +31,11 @@ export const handler = async (event: any) => {
             })
         );
 
-        const simplified = result.Items?.map(({ EmployeeID, FirstName, LastName }) => ({
+        const simplified = result.Items?.map(({ EmployeeID, FirstName, LastName, Title }) => ({
             EmployeeID,
             FirstName,
             LastName,
+            Title,
         }));
 
         return {
