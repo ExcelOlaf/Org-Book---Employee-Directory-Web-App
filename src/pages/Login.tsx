@@ -71,7 +71,7 @@ const Login: React.FC = () => {
       {!needsNewPassword ? (
         <form className="login__form" onSubmit={handleLogin}>
           <div className="login__field">
-            <label className="login__label">Testing:</label>
+            <label className="login__label">Username:</label>
             <input
               type="text"
               className="login__input"
