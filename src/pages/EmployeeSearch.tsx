@@ -35,8 +35,10 @@ export default function EmployeeSearch() {
   const [queryLastName, setQueryLastName] = useState(initial.LastName ?? "");
   const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
+    setLoading(true);
     const employeesData = await searchEmployees({
       FirstName: queryFirstName,
       LastName: queryLastName,
@@ -44,6 +46,7 @@ export default function EmployeeSearch() {
 
     setEmployees(employeesData || null);
     setSearched(true);
+    setLoading(false);
   };
 
   // OPTIONAL: auto-search if Dashboard passed something in
@@ -78,7 +81,11 @@ export default function EmployeeSearch() {
         </button>
       </div>
 
-      {searched && (
+      {loading && (
+        <p className="employee-search__loading">Searching...</p>
+      )}
+
+      {!loading && searched && (
         <table className="employee-search__table">
           <thead>
             <tr>
