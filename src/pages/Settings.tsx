@@ -40,7 +40,10 @@ export default function Settings() {
             value="light"
             className="settings__radio-input"
             checked={theme === "light"}
-            onChange={() => setTheme("light")}
+            onChange={() => {
+              setTheme("light");
+              document.documentElement.setAttribute("data-theme", 'light');
+            }}
           />
           Light Mode
         </label>
@@ -51,7 +54,10 @@ export default function Settings() {
             value="dark"
             className="settings__radio-input"
             checked={theme === "dark"}
-            onChange={() => setTheme("dark")}
+            onChange={() => {
+              setTheme("dark");
+              document.documentElement.setAttribute("data-theme", 'dark');
+            }}
           />
           Dark Mode
         </label>
@@ -65,7 +71,10 @@ export default function Settings() {
           <select
             className="settings__text-size-select"
             value={textSize}
-            onChange={(e) => setTextSize(e.target.value)}
+            onChange={(e) => {
+              setTextSize(e.target.value)
+              document.documentElement.setAttribute("data-text-size", e.target.value);
+            }}
           >
             <option value="small">Small</option>
             <option value="medium">Medium</option>
