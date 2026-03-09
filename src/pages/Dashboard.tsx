@@ -156,7 +156,7 @@ export default function Dashboard() {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> <a onClick={() => navigate(`/departments/${department}`)}>{department}</a>
+                <strong>Department:</strong> <a className="dashboard__link" onClick={() => navigate(`/departments/${department}`)}>{department}</a>
               </p>
               <p>
                 <strong>Address:</strong> {address}
