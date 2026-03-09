@@ -1239,6 +1239,7 @@ button {
 }
 
 .org-tree__details-section {
+  max-height: 500px;
   flex: 0 0 280px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -1250,17 +1251,17 @@ button {
 }
 
 .org-tree__details-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-header);
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
   border-bottom: 2px solid var(--border-light);
 }
 
 .org-tree__details-item {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
   background-color: var(--bg-card);
   border-radius: var(--radius-md);
   border-left: 3px solid var(--primary-color);
@@ -1272,6 +1273,7 @@ button {
 }
 
 .org-tree__details-label {
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--text-header);
   display: block;
@@ -1279,8 +1281,8 @@ button {
 }
 
 .org-tree__button {
-  margin-top: var(--spacing-xl);
-  padding: var(--spacing-md) var(--spacing-xl);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: var(--text-inverse);
   border: none;

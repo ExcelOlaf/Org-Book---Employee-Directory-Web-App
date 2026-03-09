@@ -128,8 +128,9 @@ export default function OrgTree() {
     loadOrgTree(viewedPersonId, false);
   };
 
-  const handlePersonClick = (person: Person) => {
-    setSelectedPerson(person);
+  const handlePersonClick = async (person: Person) => {
+    const fresh = await fetchPersonById(person.id);
+    setSelectedPerson(fresh ?? person);
   };
 
   const renderReportNode = (report: Person): React.ReactElement => (
@@ -235,6 +236,18 @@ export default function OrgTree() {
               <div className="org-tree__details-item">
                 <span className="org-tree__details-label">Job Title:</span>
                 <span className="org-tree__details-value">{selectedPerson.title}</span>
+              </div>
+              <div className="org-tree__details-item">
+                <span className="org-tree__details-label">Department:</span>
+                <span className="org-tree__details-value">{selectedPerson.dept}</span>
+              </div>
+              <div className="org-tree__details-item">
+                <span className="org-tree__details-label">Email:</span>
+                <span className="org-tree__details-value">
+                  {selectedPerson.email ? (
+                    <a href={`mailto:${selectedPerson.email}`}>{selectedPerson.email}</a>
+                  ) : "—"}
+                </span>
               </div>
               <button
                 className="org-tree__button"
