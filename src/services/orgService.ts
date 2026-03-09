@@ -5,6 +5,7 @@ export interface Person {
   name: string;
   title: string;
   dept?: string;
+  email?: string;
   reports?: Person[];
   managerId?: number;
 }
@@ -122,6 +123,7 @@ function convertToPerson(employee: EmployeeRecord, reports: Person[] = []): Pers
     name: `${employee.FirstName} ${employee.LastName}`,
     title: employee.Title,
     dept: employee.DepartmentName,
+    email: employee.EmailAddress,
     managerId: employee.ManagerID,
     reports,
   };
