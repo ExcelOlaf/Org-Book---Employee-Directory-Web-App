@@ -47,7 +47,7 @@ export default function MenuLayout() {
     <div className="menu-layout">
       <aside className="menu-layout__sidebar">
         <div className="menu-layout__header">
-          <h1 className="menu-layout__title">OrgBook</h1>
+          <button className="menu-layout__title" onClick={() => navigate(menuItems[0].path)}>OrgBook</button>
         </div>
         <nav className="menu-layout__nav">
           {menuItems.map((item) => {

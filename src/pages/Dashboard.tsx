@@ -170,7 +170,7 @@ export default function Dashboard() {
                 <strong>Phone Number:</strong> {phone}
               </p>
               <p>
-                <strong>Email:</strong> {email}
+                <strong>Email:</strong> <a href={`mailto:${email}`}>{email}</a>
               </p>
             </div>
           </section>
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
           <div className="dashboard__chips">
             <div className="dashboard__chip" onClick={() => navigate(`/org-tree/${employeeId}`)}>Org</div>
-            <div className="dashboard__chip">Email</div>
+            <div className="dashboard__chip" onClick={() => window.location.href = `mailto:${email}`}>Email</div>
             <div className="dashboard__chip">Phone</div>
           </div>
 
