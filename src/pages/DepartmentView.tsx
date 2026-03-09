@@ -7,7 +7,7 @@ export default function DepartmentView() {
   const navigate = useNavigate();
   const { deptId } = useParams<{deptId: string}>();
   const departmentName = deptId ? decodeURIComponent(deptId) : "";
-  const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: number, LastName: number }[]>([]);
+  const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: number, LastName: number, Title: string, }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,7 +45,8 @@ export default function DepartmentView() {
               className="dept-view__list-item"
               onClick={() => navigate(`/person/${emp.EmployeeID}`)}
             >
-              {`${emp.FirstName} ${emp.LastName}`}{/*  — {emp.title} */}
+              <div><strong>{`${emp.FirstName} ${emp.LastName}`}</strong></div>
+              <div>{emp.Title}</div>
             </li>
           ))}
         </ul>

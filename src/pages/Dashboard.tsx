@@ -25,6 +25,7 @@ export default function Dashboard() {
   /** ===== Profile state ===== */
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
+  const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [age, setAge] = useState<number | undefined>(undefined);
   const [phone, setPhone] = useState("");
@@ -59,6 +60,7 @@ export default function Dashboard() {
 
         setName(`${employee.FirstName} ${employee.LastName}`);
         setAge(employee.Age !== undefined && employee.Age !== null ? Number(employee.Age) : undefined);
+        setTitle(employee.Title ?? "");
         setAddress(employee.Address ?? "");
         setDepartment(employee.DepartmentName ?? "");
         setPhone(employee.PhoneNumber ?? "");
@@ -154,7 +156,7 @@ export default function Dashboard() {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> <a onClick={() => navigate(`/departments/${department}`)}>{department}</a>
+                <strong>Department:</strong> <a className="dashboard__link" onClick={() => navigate(`/departments/${department}`)}>{department}</a>
               </p>
               <p>
                 <strong>Address:</strong> {address}
@@ -184,7 +186,10 @@ export default function Dashboard() {
         {/* RIGHT COLUMN */}
         <div className="dashboard__right-column">
           <div className="dashboard__name-wrapper">
-            <div className="dashboard__name-box">{name}</div>
+            <div className="dashboard__name-box">
+              <div><strong>{name}</strong></div>
+              <div>{title}</div>
+            </div>
           </div>
 
           <div className="dashboard__profile-circle">
