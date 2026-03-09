@@ -8,12 +8,15 @@ export default function DepartmentView() {
   const { deptId } = useParams<{deptId: string}>();
   const departmentName = deptId ? decodeURIComponent(deptId) : "";
   const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: number, LastName: number, Title: string, }[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch(`${API_BASE_URL}/departments/${departmentName}`)
       .then((res) => res.json())
       .then((employees) => {
         setEmployees(employees);
+        setLoading(false);
       });
   }, []);
 
@@ -29,7 +32,9 @@ export default function DepartmentView() {
         {departmentName ? `${departmentName} Department (${employees.length} Employees)` : "Department"}
       </h2>
 
-      {employees.length === 0 ? (
+      {loading ? (
+        <div className="dept-view__empty">Loading employees...</div>
+      ) : employees.length === 0 ? (
         <div className="dept-view__empty">
           No employees found for department: <b>{departmentName || "(missing)"}</b>
         </div>

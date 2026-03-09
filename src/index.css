@@ -1161,6 +1161,8 @@ button {
 
 .org-tree__chart-section {
   flex: 2;
+  min-width: 0;
+  overflow-x: auto;
   background-color: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-2xl);
@@ -1170,7 +1172,7 @@ button {
 }
 
 .org-tree__details-section {
-  flex: 1;
+  flex: 0 0 280px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-2xl);
@@ -1344,6 +1346,48 @@ button {
 .org-tree__secondary-btn {
   margin-top: 8px;
   background-color: #6c757d;
+}
+
+.org-node--highlighted {
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(93, 138, 229, 0.25), var(--shadow-xl) !important;
+  position: relative;
+}
+
+.org-node--highlighted strong {
+  color: var(--primary-color);
+}
+
+.org-node__badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-bottom: 4px;
+}
+
+.org-node--show-more {
+  background: var(--bg-tertiary) !important;
+  border-style: dashed !important;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  min-width: 80px;
+}
+
+.org-node--show-more:hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-dark);
+}
+
+.org-tree__button--secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
 }
 
 /* ========================================
