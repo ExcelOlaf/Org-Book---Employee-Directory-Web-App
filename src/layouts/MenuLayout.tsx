@@ -34,8 +34,9 @@ export default function MenuLayout() {
   }, []);
 
   const menuItems: MenuItem[] = [
-    ...staticMenuItems,
+    ...staticMenuItems.slice(0, 3),
     { name: "Org Tree", path: orgTreePath },
+    staticMenuItems[3],
   ];
 
   const handleSignOut = async () => {
