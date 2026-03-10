@@ -71,3 +71,7 @@ coverage/
 .env
 .env.local
 .env.*
+
+CLAUDE.md
+tasks/
+todo/

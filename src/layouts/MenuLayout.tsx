@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { fetchAuthSession } from "@aws-amplify/auth";
 import { useAuth } from "../App";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 type MenuItem = {
   name: string;
@@ -73,6 +74,7 @@ export default function MenuLayout() {
       <main className="menu-layout__main">
         <Outlet />
       </main>
+      <OfflineIndicator />
     </div>
   );
 }
