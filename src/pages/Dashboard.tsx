@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
 import { useNavigate, useParams } from "react-router-dom";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 const PLACEHOLDER_ID = 730467;
 
@@ -208,9 +209,14 @@ export default function Dashboard() {
               <hr className="dashboard__divider" />
               <div className="dashboard__reporting-list">
                 <div>
-                  <a onClick={() => navigate(`/person/${managerID}`)} className="dashboard__link">
+                  <EmployeePreviewTrigger
+                    employeeId={managerID}
+                    onNavigate={() => navigate(`/person/${managerID}`)}
+                    className="dashboard__link"
+                    ariaLabel={`View profile for ${managerName}`}
+                  >
                     {managerName}
-                  </a>
+                  </EmployeePreviewTrigger>
                 </div>
               </div>
             </section>
@@ -223,9 +229,14 @@ export default function Dashboard() {
               <div className="dashboard__reporting-list">
                 {directReports.map((dr) => (
                   <div key={dr.id}>
-                    <a onClick={() => navigate(`/person/${dr.id}`)} className="dashboard__link">
+                    <EmployeePreviewTrigger
+                      employeeId={dr.id}
+                      onNavigate={() => navigate(`/person/${dr.id}`)}
+                      className="dashboard__link"
+                      ariaLabel={`View profile for ${dr.name}`}
+                    >
                       {dr.name}
-                    </a>
+                    </EmployeePreviewTrigger>
                   </div>
                 ))}
               </div>

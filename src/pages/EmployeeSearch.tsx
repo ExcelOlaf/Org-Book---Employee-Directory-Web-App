@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
 import { useNavigate, useLocation } from "react-router-dom";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 type EmployeeData = {
   EmployeeID: number;
@@ -101,9 +102,13 @@ export default function EmployeeSearch() {
               employees.map((item) => (
                 <tr key={item.EmployeeID}>
                   <td>
-                    <a onClick={() => navigate(`../person/${item.EmployeeID}`)}>
+                    <EmployeePreviewTrigger
+                      employeeId={item.EmployeeID}
+                      onNavigate={() => navigate(`../person/${item.EmployeeID}`)}
+                      ariaLabel={`View profile for ${item.FirstName} ${item.LastName}`}
+                    >
                       {item.FirstName} {item.LastName}
-                    </a>
+                    </EmployeePreviewTrigger>
                   </td>
                   <td>{item.Title}</td>
                   <td>{item.DepartmentName}</td>

@@ -55,7 +55,7 @@ function parseDirectReportsList(directReportsListJson: string | undefined): numb
   return [];
 }
 
-async function fetchEmployeeById(employeeId: number): Promise<EmployeeRecord | null> {
+export async function fetchEmployeeById(employeeId: number): Promise<EmployeeRecord | null> {
   const cached = await getCachedEmployee<EmployeeRecord>(employeeId);
   if (cached) return cached;
   try {
