@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import { useNavigate, useLocation } from "react-router-dom";
 import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
@@ -22,7 +23,7 @@ async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | n
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
 
-  const response = await fetch(url.toString());
+  const response = await authenticatedFetch(url.toString());
   if (!response.ok) return null;
   return response.json();
 }

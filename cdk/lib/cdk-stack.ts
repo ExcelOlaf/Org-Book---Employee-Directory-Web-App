@@ -312,18 +312,32 @@ export class CdkStack extends cdk.Stack {
     // API
     const api = new apigateway.RestApi(this, 'employee-api', {
       restApiName: 'employee-api',
-      description: 'API for accessing employee information'
+      description: 'API for accessing employee information',
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: ['GET', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization'],
+      },
     });
+
+    const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'EmployeeApiAuthorizer', {
+      cognitoUserPools: [userPool],
+    });
+
+    const authenticatedMethodOptions: apigateway.MethodOptions = {
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: cognitoAuthorizer,
+    };
 
     const employees = api.root.addResource('employees');
     const employeeID = employees.addResource('{employeeId}');
-    employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
+    employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda), authenticatedMethodOptions);
     const search = employees.addResource('search');
-    search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda));
+    search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda), authenticatedMethodOptions);
     const departments = api.root.addResource('departments');
-    departments.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentsLambda));
+    departments.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentsLambda), authenticatedMethodOptions);
     const departmentName = departments.addResource('{departmentName}');
-    departmentName.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentEmployeesLambda));
+    departmentName.addMethod('GET', new apigateway.LambdaIntegration(getDepartmentEmployeesLambda), authenticatedMethodOptions);
 
     // ----------
     // CLOUDFRONT

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import {
   getCachedEmployee,
   setCachedEmployee,
@@ -59,7 +60,7 @@ export async function fetchEmployeeById(employeeId: number): Promise<EmployeeRec
   const cached = await getCachedEmployee<EmployeeRecord>(employeeId);
   if (cached) return cached;
   try {
-    const response = await fetch(`${API_BASE_URL}/employees/${employeeId}`);
+    const response = await authenticatedFetch(`${API_BASE_URL}/employees/${employeeId}`);
     if (!response.ok) return null;
     const body = await response.json();
     const employee: EmployeeRecord = typeof body === "string" ? JSON.parse(body) : body;
@@ -76,7 +77,7 @@ async function fetchEmployeesByIds(employeeIds: number[]): Promise<Map<number, E
 
   if (USE_BATCH_ENDPOINT) {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/batch`, {
+      const response = await authenticatedFetch(`${API_BASE_URL}/employees/batch`, {
         method: "POST",
         body: JSON.stringify({ ids: employeeIds }),
         headers: { "Content-Type": "application/json" },
@@ -183,7 +184,7 @@ export async function fetchPersonById(id: number): Promise<Person | null> {
 export async function fetchDepartments(): Promise<string[]> {
   const cached = await getCachedDepartments();
   if (cached) return cached;
-  const res = await fetch(`${API_BASE_URL}/departments`);
+  const res = await authenticatedFetch(`${API_BASE_URL}/departments`);
   if (!res.ok) throw new Error(`Failed to fetch departments (status ${res.status})`);
   const deptNames = (await res.json()) as string[];
   const sorted = deptNames.filter((name): name is string => name !== null).sort((a, b) => a.localeCompare(b));

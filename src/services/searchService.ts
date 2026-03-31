@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../utils/apiRoute.ts";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import { getCachedSearch, setCachedSearch } from "./dbCache";
 
 export type EmployeeData = {
@@ -24,7 +25,7 @@ export async function searchEmployees(params: SearchParams): Promise<EmployeeDat
   if (cached) return cached;
 
   try {
-    const response = await fetch(url.toString());
+    const response = await authenticatedFetch(url.toString());
     if (!response.ok) return null;
     const data: EmployeeData[] = await response.json();
     void setCachedSearch(cacheKey, data);

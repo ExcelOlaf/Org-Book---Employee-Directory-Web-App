@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import { useNavigate, useParams } from "react-router-dom";
 import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
@@ -46,7 +47,10 @@ export default function Dashboard() {
     async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
       const results = await Promise.all(
         ids.map(async (rid) => {
-          const res = await fetch(`${API_BASE_URL}/employees/${rid}`);
+          const res = await authenticatedFetch(`${API_BASE_URL}/employees/${rid}`);
+          if (!res.ok) {
+            throw new Error(`Failed to load direct report ${rid} (status ${res.status})`);
+          }
           const directReport = await res.json();
           return { id: rid, name: `${directReport.FirstName} ${directReport.LastName}` };
         })
@@ -54,8 +58,13 @@ export default function Dashboard() {
       return results;
     }
 
-    fetch(`${API_BASE_URL}/employees/${employeeId}`)
-      .then((res) => res.json())
+    authenticatedFetch(`${API_BASE_URL}/employees/${employeeId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to load employee ${employeeId} (status ${res.status})`);
+        }
+        return res.json();
+      })
       .then(async (employee) => {
         if (cancelled) return;
 
@@ -70,7 +79,10 @@ export default function Dashboard() {
 
         // Manager
         if (employee.ManagerID) {
-          const mgrRes = await fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          const mgrRes = await authenticatedFetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          if (!mgrRes.ok) {
+            throw new Error(`Failed to load manager ${employee.ManagerID} (status ${mgrRes.status})`);
+          }
           const mgr = await mgrRes.json();
           if (!cancelled) {
             setManagerID(Number(mgr.EmployeeID));

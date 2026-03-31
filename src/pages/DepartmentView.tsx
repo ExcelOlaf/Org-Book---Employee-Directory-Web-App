@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // import { fetchOrgData, findPeopleByDepartment, departments } from "../services/orgService";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 export default function DepartmentView() {
@@ -13,10 +14,16 @@ export default function DepartmentView() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/departments/${departmentName}`)
+    authenticatedFetch(`${API_BASE_URL}/departments/${departmentName}`)
       .then((res) => res.json())
       .then((employees) => {
         setEmployees(employees);
+      })
+      .catch((error) => {
+        console.error("Error loading department employees:", error);
+        setEmployees([]);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, [departmentName]);

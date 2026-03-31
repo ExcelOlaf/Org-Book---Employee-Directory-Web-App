@@ -27,11 +27,14 @@ export default function ProtectedRoute({
   useEffect(() => {
     const getGroups = async () => {
       try {
-        // forceRefresh: true forces Amplify to re-validate against Cognito
-        // rather than returning a cached in-memory token
-        const session = await fetchAuthSession({ forceRefresh: true });
-        // The ID token is in the tokens
-        const idToken = session.tokens?.idToken;
+        let session = await fetchAuthSession();
+        let idToken = session.tokens?.idToken;
+
+        // Fall back to a refresh only if no token is currently cached.
+        if (!idToken) {
+          session = await fetchAuthSession({ forceRefresh: true });
+          idToken = session.tokens?.idToken;
+        }
         
         if (!idToken) {
           console.error("No valid ID token found");
@@ -41,7 +44,7 @@ export default function ProtectedRoute({
         }
         
         setHasValidToken(true);
-        const groups = idToken?.payload?.["cognito:groups"] as string[] || [];
+        const groups = (idToken.payload?.["cognito:groups"] as string[]) || [];
         setUserGroups(groups);
         console.log("Groups from session:", groups);
       } catch (error) {
