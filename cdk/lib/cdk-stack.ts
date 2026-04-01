@@ -313,8 +313,29 @@ export class CdkStack extends cdk.Stack {
     const api = new apigateway.RestApi(this, 'employee-api', {
       restApiName: 'employee-api',
       description: 'API for accessing employee information',
+      deployOptions: {
+        // Free built-in API Gateway throttling (no extra service cost)
+        throttlingRateLimit: 50,
+        throttlingBurstLimit: 100,
+        methodOptions: {
+          '/employees/search/GET': {
+            throttlingRateLimit: 10,
+            throttlingBurstLimit: 20,
+          },
+          '/employees/{employeeId}/GET': {
+            throttlingRateLimit: 20,
+            throttlingBurstLimit: 40,
+          },
+          '/departments/{departmentName}/GET': {
+            throttlingRateLimit: 20,
+            throttlingBurstLimit: 40,
+          },
+        },
+      },
       defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        // Limit browser callers to your production site domain.
+        // This is free and reduces cross-origin misuse from arbitrary sites.
+        allowOrigins: ['https://www.orgbooksd.com'],
         allowMethods: ['GET', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
       },
