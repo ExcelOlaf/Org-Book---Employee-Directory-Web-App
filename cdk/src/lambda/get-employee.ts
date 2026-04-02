@@ -3,20 +3,18 @@ import { dynamo } from "../shared/db-client"
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3 } from "../shared/s3-client";
+import { buildApiHeaders } from "../shared/http-headers";
 
 const tableName = "Employee";
 const imageBucketName = "mployee-data-bucket";
 
 export const handler = async (event: any) => {
+  const headers = buildApiHeaders(event);
   let employeeId = event.pathParameters?.employeeId;
   if (!employeeId) {
     return {
       statusCode: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({ message: "Missing EmployeeID" })
 
     };
@@ -26,11 +24,7 @@ export const handler = async (event: any) => {
   } catch {
     return {
       statusCode: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({ message: "EmployeeID must be a number" })
     };
   }
@@ -45,11 +39,7 @@ export const handler = async (event: any) => {
   if (!result.Item) {
     return {
       statusCode: 404,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({ message: `No employee found with ID ${employeeId}` })
     }
   }
@@ -63,11 +53,7 @@ export const handler = async (event: any) => {
   result.Item.Picture = url;
   return {
     statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Methods": "GET,OPTIONS",
-    },
+    headers,
     
     body: JSON.stringify(result.Item ?? {})
   };

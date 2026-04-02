@@ -19,6 +19,11 @@ export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const allowedApiOrigins =
+      this.node.tryGetContext('allowedApiOrigins') ||
+      process.env.ALLOWED_API_ORIGINS ||
+      'https://www.orgbooksd.com,https://d2ywwchq35tdbl.cloudfront.net';
+
     // Cognito config (define early so it's available to all lambdas)
     const userPoolId = this.node.tryGetContext('userPoolId') || process.env.USER_POOL_ID || 'us-east-2_00owBPrPI';
     const userPoolClientId = this.node.tryGetContext('userPoolClientId') || process.env.USER_POOL_CLIENT_ID || '7a049gl2po684ffq0u70tq4tkb';
@@ -137,6 +142,7 @@ export class CdkStack extends cdk.Stack {
         TABLE_NAME: employeeTable.tableName,
         USER_POOL_ID: userPoolId,
         USER_POOL_CLIENT_ID: userPoolClientId,
+        API_ALLOWED_ORIGINS: allowedApiOrigins,
       }
     });
     employeeTable.grantReadData(getEmployeeLambda);
@@ -165,6 +171,7 @@ export class CdkStack extends cdk.Stack {
 
       environment: {
         TABLE_NAME: employeeTable.tableName,
+        API_ALLOWED_ORIGINS: allowedApiOrigins,
       },
     });
     employeeTable.grantReadData(getDepartmentsLambda);
@@ -178,6 +185,7 @@ export class CdkStack extends cdk.Stack {
 
       environment: {
         TABLE_NAME: employeeTable.tableName,
+        API_ALLOWED_ORIGINS: allowedApiOrigins,
       },
     })
     employeeTable.grantReadData(getDepartmentEmployeesLambda);
@@ -205,6 +213,7 @@ export class CdkStack extends cdk.Stack {
         TABLE_NAME: employeeTable.tableName,
         USER_POOL_ID: userPoolId,
         USER_POOL_CLIENT_ID: userPoolClientId,
+        API_ALLOWED_ORIGINS: allowedApiOrigins,
       }
     });
 
@@ -393,6 +402,47 @@ export class CdkStack extends cdk.Stack {
     );
 
     // Create CloudFront distribution
+    const securityHeadersPolicy = new cloudfront.ResponseHeadersPolicy(this, "WebsiteSecurityHeadersPolicy", {
+      comment: "Security headers policy for OrgBook website",
+      securityHeadersBehavior: {
+        contentSecurityPolicy: {
+          contentSecurityPolicy:
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://u3fn94z8c3.execute-api.us-east-2.amazonaws.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
+          override: true,
+        },
+        contentTypeOptions: { override: true },
+        frameOptions: {
+          frameOption: cloudfront.HeadersFrameOption.DENY,
+          override: true,
+        },
+        referrerPolicy: {
+          referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+          override: true,
+        },
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          preload: true,
+          override: true,
+        },
+        xssProtection: {
+          protection: true,
+          modeBlock: true,
+          override: true,
+        },
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          {
+            header: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()",
+            override: true,
+          },
+        ],
+      },
+    });
+
     const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultBehavior: {
         origin: new origins.S3Origin(websiteBucket, {
@@ -401,6 +451,7 @@ export class CdkStack extends cdk.Stack {
         viewerProtocolPolicy:
           cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: securityHeadersPolicy,
       },
       defaultRootObject: "index.html",
       errorResponses: [
