@@ -17,7 +17,7 @@ export const handler = async (event: any) => {
     }
 
     const fileType = event.queryStringParameters?.fileType ?? "image/jpeg";
-    const key = `profile-pictures/${employeeId}.jpg`;
+    const key = `profile-pictures/${employeeId}.png`;
 
     const command = new PutObjectCommand({
         Bucket: imageBucketName,

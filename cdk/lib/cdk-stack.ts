@@ -340,7 +340,17 @@ export class CdkStack extends cdk.Stack {
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
     const uploadUrl = employeeID.addResource('upload-url');
     uploadUrl.addMethod('GET', new apigateway.LambdaIntegration(getUploadUrlLambda));
+    uploadUrl.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: ['GET', 'OPTIONS'],
+      allowHeaders: ['Content-Type',]
+    });
     employeeID.addMethod('PATCH', new apigateway.LambdaIntegration(updateEmployeePictureLambda));
+    employeeID.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: ['GET', 'PATCH', 'OPTIONS'],
+      allowHeaders: ['Content-Type',]
+    });
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda));
     const departments = api.root.addResource('departments');
