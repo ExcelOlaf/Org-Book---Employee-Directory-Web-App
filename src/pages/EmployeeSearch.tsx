@@ -15,6 +15,7 @@ type EmployeeData = {
 type SearchParams = {
   FirstName?: string;
   LastName?: string;
+  Position?: string;
 };
 
 async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
@@ -32,10 +33,11 @@ export default function EmployeeSearch() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const initial = (location.state ?? {}) as { FirstName?: string; LastName?: string };
+  const initial = (location.state ?? {}) as { FirstName?: string; LastName?: string; Position?: string };
 
   const [queryFirstName, setQueryFirstName] = useState(initial.FirstName ?? "");
   const [queryLastName, setQueryLastName] = useState(initial.LastName ?? "");
+  const [queryPosition, setQueryPosition] = useState(initial.Position ?? "");
   const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,7 @@ export default function EmployeeSearch() {
     const employeesData = await searchEmployees({
       FirstName: queryFirstName,
       LastName: queryLastName,
+      Position: queryPosition,
     });
 
     setEmployees(employeesData || null);
@@ -54,7 +57,11 @@ export default function EmployeeSearch() {
 
   // OPTIONAL: auto-search if Dashboard passed something in
   useEffect(() => {
-    if ((initial.FirstName && initial.FirstName.trim() !== "") || (initial.LastName && initial.LastName.trim() !== "")) {
+    if (
+      (initial.FirstName && initial.FirstName.trim() !== "") ||
+      (initial.LastName && initial.LastName.trim() !== "") ||
+      (initial.Position && initial.Position.trim() !== "")
+    ) {
       handleSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,6 +84,13 @@ export default function EmployeeSearch() {
           placeholder="Last Name"
           value={queryLastName}
           onChange={(e) => setQueryLastName(e.target.value)}
+          className="employee-search__input"
+        />
+        <input
+          type="text"
+          placeholder="Position"
+          value={queryPosition}
+          onChange={(e) => setQueryPosition(e.target.value)}
           className="employee-search__input"
         />
         <button onClick={handleSearch} className="employee-search__button">
@@ -118,7 +132,7 @@ export default function EmployeeSearch() {
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="employee-search__no-results">
+                <td colSpan={4} className="employee-search__no-results">
                   No employees found
                 </td>
               </tr>

@@ -244,6 +244,7 @@ export class CdkStack extends cdk.Stack {
         actions: [
           'dynamodb:Query',
           'dynamodb:GetItem',
+          'dynamodb:Scan',
         ],
         resources: [
           employeeTable.tableArn,
