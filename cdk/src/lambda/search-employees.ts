@@ -1,5 +1,6 @@
 import { dynamo } from "../shared/db-client";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { buildApiHeaders } from "../shared/http-headers";
 
 const tableName = process.env.TABLE_NAME || "Employee";
@@ -14,15 +15,29 @@ const tableName = process.env.TABLE_NAME || "Employee";
 export const handler = async (event: any) => {
   const headers = buildApiHeaders(event);
   const query = event.queryStringParameters ?? {};
-  const { FirstName, LastName } = query;
+  const { FirstName, LastName, Position, Title } = query;
+  const positionTerm = String(Position ?? Title ?? "").trim().toLowerCase();
 
-  // ✅ Must provide at least first or last name
-  if (!FirstName && !LastName) {
+  const filterByPosition = (items: any[]) => {
+    if (!positionTerm) return items;
+    return items.filter((item) =>
+      String(item?.Title ?? "").toLowerCase().includes(positionTerm)
+    );
+  };
+
+  const ok = (items: any[]) => ({
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(items),
+  });
+
+  // ✅ Must provide at least one supported search field
+  if (!FirstName && !LastName && !positionTerm) {
     return {
       statusCode: 400,
       headers,
       body: JSON.stringify({
-        message: "Provide at least FirstName or LastName to search.",
+        message: "Provide at least FirstName, LastName, or Position to search.",
       }),
     };
   }
@@ -42,11 +57,7 @@ export const handler = async (event: any) => {
         })
       );
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(result.Items ?? []),
-      };
+      return ok(filterByPosition(result.Items ?? []));
     }
 
     // ✅ Case 2: First name only
@@ -62,11 +73,7 @@ export const handler = async (event: any) => {
         })
       );
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(result.Items ?? []),
-      };
+      return ok(filterByPosition(result.Items ?? []));
     }
 
     // ✅ Case 3: Last name only
@@ -82,11 +89,27 @@ export const handler = async (event: any) => {
         })
       );
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(result.Items ?? []),
-      };
+      return ok(filterByPosition(result.Items ?? []));
+    }
+
+    // ✅ Case 4: Position only
+    if (positionTerm) {
+      const matches: any[] = [];
+      let ExclusiveStartKey: Record<string, any> | undefined;
+
+      do {
+        const result = await dynamo.send(
+          new ScanCommand({
+            TableName: tableName,
+            ExclusiveStartKey,
+          })
+        );
+
+        matches.push(...filterByPosition(result.Items ?? []));
+        ExclusiveStartKey = result.LastEvaluatedKey as Record<string, any> | undefined;
+      } while (ExclusiveStartKey);
+
+      return ok(matches);
     }
 
     return {

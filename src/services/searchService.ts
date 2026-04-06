@@ -12,12 +12,15 @@ export type EmployeeData = {
 export type SearchParams = {
   FirstName?: string;
   LastName?: string;
+  Position?: string;
 };
 
 export async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
   const url = new URL(`${API_BASE_URL}/employees/search`);
   Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.append(key, String(value));
+    if (value !== undefined && value !== "") {
+      url.searchParams.append(key, String(value));
+    }
   });
 
   const cacheKey = url.search; // e.g. "?FirstName=John"
