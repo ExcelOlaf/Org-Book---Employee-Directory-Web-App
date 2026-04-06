@@ -1,5 +1,6 @@
 import { dynamo } from "../shared/db-client";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { buildApiHeaders } from "../shared/http-headers";
 
 const tableName = process.env.TABLE_NAME || "Employee";
 
@@ -11,6 +12,7 @@ const tableName = process.env.TABLE_NAME || "Employee";
 
 
 export const handler = async (event: any) => {
+  const headers = buildApiHeaders(event);
   const query = event.queryStringParameters ?? {};
   const { FirstName, LastName } = query;
 
@@ -18,11 +20,7 @@ export const handler = async (event: any) => {
   if (!FirstName && !LastName) {
     return {
       statusCode: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({
         message: "Provide at least FirstName or LastName to search.",
       }),
@@ -46,11 +44,7 @@ export const handler = async (event: any) => {
 
       return {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "GET,OPTIONS",
-        },
+        headers,
         body: JSON.stringify(result.Items ?? []),
       };
     }
@@ -70,11 +64,7 @@ export const handler = async (event: any) => {
 
       return {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "GET,OPTIONS",
-        },
+        headers,
         body: JSON.stringify(result.Items ?? []),
       };
     }
@@ -94,33 +84,21 @@ export const handler = async (event: any) => {
 
       return {
         statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
-          "Access-Control-Allow-Methods": "GET,OPTIONS",
-        },
+        headers,
         body: JSON.stringify(result.Items ?? []),
       };
     }
 
     return {
       statusCode: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({ message: "Invalid search combination" }),
     };
   } catch (err: any) {
     console.error("❌ Search error:", err);
     return {
       statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
+      headers,
       body: JSON.stringify({
         message: "Internal Server Error",
         error: err.message,

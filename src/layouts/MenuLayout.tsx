@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { fetchAuthSession } from "@aws-amplify/auth";
 import { useAuth } from "../App";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 type MenuItem = {
   name: string;
@@ -48,7 +49,10 @@ export default function MenuLayout() {
     <div className="menu-layout">
       <aside className="menu-layout__sidebar">
         <div className="menu-layout__header">
-          <button className="menu-layout__title" onClick={() => navigate(menuItems[0].path)}>OrgBook</button>
+          <button className="menu-layout__brand" onClick={() => navigate(menuItems[0].path)}>
+            <img src="/OrgBookLogo.png" alt="Company logo" className="menu-layout__logo" />
+            <span className="menu-layout__title">OrgBook</span>
+          </button>
         </div>
         <nav className="menu-layout__nav">
           {menuItems.map((item) => {
@@ -73,6 +77,7 @@ export default function MenuLayout() {
       <main className="menu-layout__main">
         <Outlet />
       </main>
+      <OfflineIndicator />
     </div>
   );
 }

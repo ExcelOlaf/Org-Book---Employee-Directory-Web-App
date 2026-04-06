@@ -7,6 +7,7 @@ import {
   clearOrgTreeCache,
 } from "../services/orgService";
 import type { Person } from "../services/orgService";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 const LOGGED_IN_EMPLOYEE_ID = 730467;
 
@@ -249,12 +250,15 @@ export default function OrgTree() {
                   ) : "—"}
                 </span>
               </div>
-              <button
+              <EmployeePreviewTrigger
+                employeeId={selectedPerson.id}
+                onNavigate={() => navigate(`/person/${selectedPerson.id}`)}
+                variant="block"
                 className="org-tree__button"
-                onClick={() => navigate(`/person/${selectedPerson.id}`)}
+                ariaLabel={`View profile for ${selectedPerson.name}`}
               >
                 View Full Profile
-              </button>
+              </EmployeePreviewTrigger>
               {selectedPerson.id !== viewedPersonId && (
                 <button
                   className="org-tree__button org-tree__button--secondary"

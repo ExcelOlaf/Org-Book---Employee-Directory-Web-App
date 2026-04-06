@@ -2,23 +2,31 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // import { fetchOrgData, findPeopleByDepartment, departments } from "../services/orgService";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 export default function DepartmentView() {
   const navigate = useNavigate();
   const { deptId } = useParams<{deptId: string}>();
   const departmentName = deptId ? decodeURIComponent(deptId) : "";
-  const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: number, LastName: number, Title: string, }[]>([]);
+  const [employees, setEmployees] = useState<{ EmployeeID: number, FirstName: string, LastName: string, Title: string, }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/departments/${departmentName}`)
+    authenticatedFetch(`${API_BASE_URL}/departments/${departmentName}`)
       .then((res) => res.json())
       .then((employees) => {
         setEmployees(employees);
+      })
+      .catch((error) => {
+        console.error("Error loading department employees:", error);
+        setEmployees([]);
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [departmentName]);
 
   // const dept = departments.find((d) => d.id === id);
 
@@ -41,12 +49,17 @@ export default function DepartmentView() {
       ) : (
         <ul className="dept-view__list">
           {employees.map((emp) => (
-            <li key={emp.EmployeeID}
-              className="dept-view__list-item"
-              onClick={() => navigate(`/person/${emp.EmployeeID}`)}
-            >
-              <div><strong>{`${emp.FirstName} ${emp.LastName}`}</strong></div>
-              <div>{emp.Title}</div>
+            <li key={emp.EmployeeID}>
+              <EmployeePreviewTrigger
+                employeeId={emp.EmployeeID}
+                onNavigate={() => navigate(`/person/${emp.EmployeeID}`)}
+                variant="block"
+                className="dept-view__list-item dept-view__list-item--preview"
+                ariaLabel={`View profile for ${emp.FirstName} ${emp.LastName}`}
+              >
+                <div><strong>{`${emp.FirstName} ${emp.LastName}`}</strong></div>
+                <div>{emp.Title}</div>
+              </EmployeePreviewTrigger>
             </li>
           ))}
         </ul>
