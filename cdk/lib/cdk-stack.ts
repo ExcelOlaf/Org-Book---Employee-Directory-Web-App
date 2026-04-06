@@ -148,6 +148,26 @@ export class CdkStack extends cdk.Stack {
     employeeTable.grantReadData(getEmployeeLambda);
     imagesBucket.grantRead(getEmployeeLambda);
 
+    const getUploadUrlLambda = new lambda.Function(this, 'GetUploadUrlLambda', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'lambda/get-upload-url.handler',
+      code: lambda.Code.fromAsset('dist/src'),
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    });
+    imagesBucket.grantPut(getUploadUrlLambda);
+
+    const updateEmployeePictureLambda = new lambda.Function(this, 'UpdateEmployeePictureLambda', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'lambda/update-employee-picture.handler',
+      code: lambda.Code.fromAsset('dist/src'),
+      environment: {
+        TABLE_NAME: employeeTable.tableName,
+      },
+    });
+    employeeTable.grantWriteData(updateEmployeePictureLambda);
+
     const putEmployeesLambda = new lambda.Function(this, "InsertLambda", {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: "lambda/put-employees.handler",
@@ -362,6 +382,19 @@ export class CdkStack extends cdk.Stack {
     const employees = api.root.addResource('employees');
     const employeeID = employees.addResource('{employeeId}');
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda), authenticatedMethodOptions);
+    const uploadUrl = employeeID.addResource('upload-url');
+    uploadUrl.addMethod('GET', new apigateway.LambdaIntegration(getUploadUrlLambda), authenticatedMethodOptions);
+    uploadUrl.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: ['GET', 'OPTIONS'],
+      allowHeaders: ['Content-Type',]
+    });
+    employeeID.addMethod('PATCH', new apigateway.LambdaIntegration(updateEmployeePictureLambda));
+    employeeID.addCorsPreflight({
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: ['GET', 'PATCH', 'OPTIONS'],
+      allowHeaders: ['Content-Type',]
+    });
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda), authenticatedMethodOptions);
     const departments = api.root.addResource('departments');
