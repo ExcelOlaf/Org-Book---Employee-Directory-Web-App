@@ -4,6 +4,10 @@ import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { buildApiHeaders } from "../shared/http-headers";
 
 const tableName = process.env.TABLE_NAME || "Employee";
+const positionScanSegments = Math.max(
+  1,
+  Number(process.env.POSITION_SCAN_SEGMENTS || "4")
+);
 
 // GSIs:
 // 1️⃣ FirstNameLower-LastNameLower-index (PK=FirstNameLower, SK=LastNameLower)
@@ -94,20 +98,33 @@ export const handler = async (event: any) => {
 
     // ✅ Case 4: Position only
     if (positionTerm) {
-      const matches: any[] = [];
-      let ExclusiveStartKey: Record<string, any> | undefined;
+      const scanSegment = async (segment: number): Promise<any[]> => {
+        const segmentMatches: any[] = [];
+        let ExclusiveStartKey: Record<string, any> | undefined;
 
-      do {
-        const result = await dynamo.send(
-          new ScanCommand({
-            TableName: tableName,
-            ExclusiveStartKey,
-          })
-        );
+        do {
+          const result = await dynamo.send(
+            new ScanCommand({
+              TableName: tableName,
+              Segment: segment,
+              TotalSegments: positionScanSegments,
+              ExclusiveStartKey,
+            })
+          );
 
-        matches.push(...filterByPosition(result.Items ?? []));
-        ExclusiveStartKey = result.LastEvaluatedKey as Record<string, any> | undefined;
-      } while (ExclusiveStartKey);
+          segmentMatches.push(...filterByPosition(result.Items ?? []));
+          ExclusiveStartKey = result.LastEvaluatedKey as
+            | Record<string, any>
+            | undefined;
+        } while (ExclusiveStartKey);
+
+        return segmentMatches;
+      };
+
+      const segmentResults = await Promise.all(
+        Array.from({ length: positionScanSegments }, (_, i) => scanSegment(i))
+      );
+      const matches = segmentResults.flat();
 
       return ok(matches);
     }

@@ -366,7 +366,7 @@ export class CdkStack extends cdk.Stack {
         // Limit browser callers to your production site domain.
         // This is free and reduces cross-origin misuse from arbitrary sites.
         allowOrigins: ['https://www.orgbooksd.com'],
-        allowMethods: ['GET', 'OPTIONS'],
+        allowMethods: ['GET', 'PATCH', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
       },
     });
@@ -385,17 +385,7 @@ export class CdkStack extends cdk.Stack {
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda), authenticatedMethodOptions);
     const uploadUrl = employeeID.addResource('upload-url');
     uploadUrl.addMethod('GET', new apigateway.LambdaIntegration(getUploadUrlLambda), authenticatedMethodOptions);
-    uploadUrl.addCorsPreflight({
-      allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: ['GET', 'OPTIONS'],
-      allowHeaders: ['Content-Type',]
-    });
     employeeID.addMethod('PATCH', new apigateway.LambdaIntegration(updateEmployeePictureLambda));
-    employeeID.addCorsPreflight({
-      allowOrigins: apigateway.Cors.ALL_ORIGINS,
-      allowMethods: ['GET', 'PATCH', 'OPTIONS'],
-      allowHeaders: ['Content-Type',]
-    });
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda), authenticatedMethodOptions);
     const departments = api.root.addResource('departments');
