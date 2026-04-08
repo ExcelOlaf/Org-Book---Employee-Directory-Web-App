@@ -6,7 +6,7 @@ import { buildApiHeaders } from "../shared/http-headers";
 const tableName = process.env.TABLE_NAME || "Employee";
 const positionScanSegments = Math.max(
   1,
-  Number(process.env.POSITION_SCAN_SEGMENTS || "4")
+  Number(process.env.POSITION_SCAN_SEGMENTS || "8")
 );
 
 // GSIs:
@@ -108,6 +108,8 @@ export const handler = async (event: any) => {
               TableName: tableName,
               Segment: segment,
               TotalSegments: positionScanSegments,
+              ProjectionExpression:
+                "EmployeeID, FirstName, LastName, DepartmentName, Title",
               ExclusiveStartKey,
             })
           );
