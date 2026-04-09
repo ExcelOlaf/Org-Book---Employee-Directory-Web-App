@@ -365,7 +365,7 @@ export class CdkStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         // Limit browser callers to your production site domain.
         // This is free and reduces cross-origin misuse from arbitrary sites.
-        allowOrigins: ['https://www.orgbooksd.com'],
+        allowOrigins: ['https://www.orgbooksd.com', 'https://orgbooksd.com'],
         allowMethods: ['GET', 'PATCH', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
       },
