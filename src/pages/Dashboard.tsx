@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import { useNavigate, useParams } from "react-router-dom";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 const PLACEHOLDER_ID = 730467;
 
@@ -25,6 +27,7 @@ export default function Dashboard() {
   /** ===== Profile state ===== */
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
+  const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [age, setAge] = useState<number | undefined>(undefined);
   const [phone, setPhone] = useState("");
@@ -63,7 +66,10 @@ const messageOfTheDay = useMemo(() => {
     async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
       const results = await Promise.all(
         ids.map(async (rid) => {
-          const res = await fetch(`${API_BASE_URL}/employees/${rid}`);
+          const res = await authenticatedFetch(`${API_BASE_URL}/employees/${rid}`);
+          if (!res.ok) {
+            throw new Error(`Failed to load direct report ${rid} (status ${res.status})`);
+          }
           const directReport = await res.json();
           return { id: rid, name: `${directReport.FirstName} ${directReport.LastName}` };
         })
@@ -71,13 +77,19 @@ const messageOfTheDay = useMemo(() => {
       return results;
     }
 
-    fetch(`${API_BASE_URL}/employees/${employeeId}`)
-      .then((res) => res.json())
+    authenticatedFetch(`${API_BASE_URL}/employees/${employeeId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to load employee ${employeeId} (status ${res.status})`);
+        }
+        return res.json();
+      })
       .then(async (employee) => {
         if (cancelled) return;
 
         setName(`${employee.FirstName} ${employee.LastName}`);
         setAge(employee.Age !== undefined && employee.Age !== null ? Number(employee.Age) : undefined);
+        setTitle(employee.Title ?? "");
         setAddress(employee.Address ?? "");
         setDepartment(employee.DepartmentName ?? "");
         setPhone(employee.PhoneNumber ?? "");
@@ -86,7 +98,10 @@ const messageOfTheDay = useMemo(() => {
 
         // Manager
         if (employee.ManagerID) {
-          const mgrRes = await fetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          const mgrRes = await authenticatedFetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          if (!mgrRes.ok) {
+            throw new Error(`Failed to load manager ${employee.ManagerID} (status ${mgrRes.status})`);
+          }
           const mgr = await mgrRes.json();
           if (!cancelled) {
             setManagerID(Number(mgr.EmployeeID));
@@ -173,7 +188,7 @@ const messageOfTheDay = useMemo(() => {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> <a onClick={() => navigate(`/departments/${department}`)}>{department}</a>
+                <strong>Department:</strong> <a className="dashboard__link" onClick={() => navigate(`/departments/${department}`)}>{department}</a>
               </p>
               <p>
                 <strong>Address:</strong> {address}
@@ -189,7 +204,7 @@ const messageOfTheDay = useMemo(() => {
                 <strong>Phone Number:</strong> {phone}
               </p>
               <p>
-                <strong>Email:</strong> {email}
+                <strong>Email:</strong> <a href={`mailto:${email}`}>{email}</a>
               </p>
             </div>
           </section>
@@ -203,7 +218,10 @@ const messageOfTheDay = useMemo(() => {
         {/* RIGHT COLUMN */}
         <div className="dashboard__right-column">
           <div className="dashboard__name-wrapper">
-            <div className="dashboard__name-box">{name}</div>
+            <div className="dashboard__name-box">
+              <div><strong>{name}</strong></div>
+              <div>{title}</div>
+            </div>
           </div>
 
           <div className="dashboard__profile-circle">
@@ -211,8 +229,8 @@ const messageOfTheDay = useMemo(() => {
           </div>
 
           <div className="dashboard__chips">
-            <div className="dashboard__chip">Org</div>
-            <div className="dashboard__chip">Email</div>
+            <div className="dashboard__chip" onClick={() => navigate(`/org-tree/${employeeId}`)}>Org</div>
+            <div className="dashboard__chip" onClick={() => window.location.href = `mailto:${email}`}>Email</div>
             <div className="dashboard__chip">Phone</div>
           </div>
 
@@ -222,9 +240,14 @@ const messageOfTheDay = useMemo(() => {
               <hr className="dashboard__divider" />
               <div className="dashboard__reporting-list">
                 <div>
-                  <a onClick={() => navigate(`/person/${managerID}`)} className="dashboard__link">
+                  <EmployeePreviewTrigger
+                    employeeId={managerID}
+                    onNavigate={() => navigate(`/person/${managerID}`)}
+                    className="dashboard__link"
+                    ariaLabel={`View profile for ${managerName}`}
+                  >
                     {managerName}
-                  </a>
+                  </EmployeePreviewTrigger>
                 </div>
               </div>
             </section>
@@ -237,9 +260,14 @@ const messageOfTheDay = useMemo(() => {
               <div className="dashboard__reporting-list">
                 {directReports.map((dr) => (
                   <div key={dr.id}>
-                    <a onClick={() => navigate(`/person/${dr.id}`)} className="dashboard__link">
+                    <EmployeePreviewTrigger
+                      employeeId={dr.id}
+                      onNavigate={() => navigate(`/person/${dr.id}`)}
+                      className="dashboard__link"
+                      ariaLabel={`View profile for ${dr.name}`}
+                    >
                       {dr.name}
-                    </a>
+                    </EmployeePreviewTrigger>
                   </div>
                 ))}
               </div>

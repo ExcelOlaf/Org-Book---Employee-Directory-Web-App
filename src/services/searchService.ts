@@ -1,5 +1,6 @@
-import { API_BASE_URL } from "../utils/apiRoute.ts"
-
+import { API_BASE_URL } from "../utils/apiRoute.ts";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
+import { getCachedSearch, setCachedSearch } from "./dbCache";
 
 export type EmployeeData = {
   EmployeeID: number;
@@ -11,19 +12,29 @@ export type EmployeeData = {
 export type SearchParams = {
   FirstName?: string;
   LastName?: string;
+  Position?: string;
 };
 
 export async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
   const url = new URL(`${API_BASE_URL}/employees/search`);
   Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.append(key, String(value));
+    if (value !== undefined && value !== "") {
+      url.searchParams.append(key, String(value));
+    }
   });
-  const response = await fetch(url.toString());
-  // use authorization later
 
-  if (!response.ok) {
+  const cacheKey = url.search; // e.g. "?FirstName=John"
+  const cached = await getCachedSearch<EmployeeData[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const response = await authenticatedFetch(url.toString());
+    if (!response.ok) return null;
+    const data: EmployeeData[] = await response.json();
+    void setCachedSearch(cacheKey, data);
+    return data;
+  } catch {
     return null;
   }
-  return response.json();
 }
 

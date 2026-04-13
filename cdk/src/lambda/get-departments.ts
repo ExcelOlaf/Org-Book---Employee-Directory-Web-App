@@ -1,9 +1,11 @@
 import { dynamo } from "../shared/db-client";
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { buildApiHeaders } from "../shared/http-headers";
 
 const tableName = process.env.TABLE_NAME || "Employee";
 
-export const handler = async () => {
+export const handler = async (event: any) => {
+    const headers = buildApiHeaders(event);
     const result = await dynamo.send(
         new ScanCommand({
             TableName: tableName,
@@ -17,11 +19,7 @@ export const handler = async () => {
 
     return {
         statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Allow-Methods": "GET,OPTIONS",
-        },
+        headers,
         body: JSON.stringify(unique ?? []),
     };
 };

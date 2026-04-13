@@ -17,7 +17,7 @@
     "deploy:website": "npm run build && aws s3 sync dist/ s3://cdkstack-websitebucket75c24d94-34vikulmca26 --delete && aws cloudfront create-invalidation --distribution-id E10OKSYXS0TBLG --paths \"/*\""
   },
   "dependencies": {
-    "@aws-amplify/auth": "^6.16.0",
+    "@aws-amplify/auth": "^6.19.1",
     "@aws-amplify/ui-react": "^6.13.1",
     "@aws-sdk/client-dynamodb": "^3.902.0",
     "@aws-sdk/client-s3": "^3.917.0",
@@ -33,6 +33,7 @@
     "constructs": "^10.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "idb": "^8.0.3",
     "react": "^19.2.4",
     "react-d3-tree": "^3.6.6",
     "react-dom": "^19.2.4",
@@ -43,7 +44,7 @@
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@types/express": "^5.0.3",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.5.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/react-router-dom": "^5.3.3",
@@ -59,7 +60,8 @@
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.43.0",
-    "vite": "^7.1.6"
+    "vite": "^7.1.6",
+    "vite-plugin-pwa": "^1.2.0"
   },
   "overrides": {
     "ajv": ">=8.18.0",

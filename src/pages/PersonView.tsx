@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchPersonById, fetchOrgData } from "../services/orgService";
+import { fetchPersonById, fetchOrgDataFromEmployee } from "../services/orgService";
 import type { Person } from "../services/orgService";
 
 const PersonView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [person, setPerson] = useState<Person | null>(null);
-  const [org, setOrg] = useState<Person[]>([]);
+  const [manager, setManager] = useState<Person | null>(null);
+  const [directReports, setDirectReports] = useState<Person[]>([]);
 
   useEffect(() => {
-    if (id) fetchPersonById(Number(id)).then(setPerson);
+    if (!id) return;
+    const numId = Number(id);
 
-    fetchOrgData().then((root) => {
-      if (!root) return;
-      const list: Person[] = [];
-      const walk = (p: Person) => {
-        list.push(p);
-        p.reports?.forEach(walk);
-      };
-      walk(root);
-      setOrg(list);
+    fetchPersonById(numId).then(async (p) => {
+      setPerson(p);
+      if (p?.managerId) {
+        const mgr = await fetchPersonById(p.managerId);
+        setManager(mgr);
+      }
+    });
+
+    fetchOrgDataFromEmployee(numId).then((root) => {
+      setDirectReports(root?.reports ?? []);
     });
   }, [id]);
 
@@ -31,9 +34,6 @@ const PersonView: React.FC = () => {
       </div>
     );
   }
-
-  const manager = org.find((p) => p.id === person.managerId);
-  const directReports = org.filter((p) => p.managerId === person.id);
 
   return (
     <div style={{ padding: "50px" }}>

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 import { useNavigate, useLocation } from "react-router-dom";
+import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 type EmployeeData = {
   EmployeeID: number;
+  Title: string;
   FirstName: string;
   LastName: string;
   DepartmentName: string;
@@ -12,6 +15,7 @@ type EmployeeData = {
 type SearchParams = {
   FirstName?: string;
   LastName?: string;
+  Position?: string;
 };
 
 async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | null> {
@@ -20,7 +24,7 @@ async function searchEmployees(params: SearchParams): Promise<EmployeeData[] | n
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
 
-  const response = await fetch(url.toString());
+  const response = await authenticatedFetch(url.toString());
   if (!response.ok) return null;
   return response.json();
 }
@@ -29,26 +33,35 @@ export default function EmployeeSearch() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const initial = (location.state ?? {}) as { FirstName?: string; LastName?: string };
+  const initial = (location.state ?? {}) as { FirstName?: string; LastName?: string; Position?: string };
 
   const [queryFirstName, setQueryFirstName] = useState(initial.FirstName ?? "");
   const [queryLastName, setQueryLastName] = useState(initial.LastName ?? "");
+  const [queryPosition, setQueryPosition] = useState(initial.Position ?? "");
   const [employees, setEmployees] = useState<EmployeeData[] | null>(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
+    setLoading(true);
     const employeesData = await searchEmployees({
       FirstName: queryFirstName,
       LastName: queryLastName,
+      Position: queryPosition,
     });
 
     setEmployees(employeesData || null);
     setSearched(true);
+    setLoading(false);
   };
 
   // OPTIONAL: auto-search if Dashboard passed something in
   useEffect(() => {
-    if ((initial.FirstName && initial.FirstName.trim() !== "") || (initial.LastName && initial.LastName.trim() !== "")) {
+    if (
+      (initial.FirstName && initial.FirstName.trim() !== "") ||
+      (initial.LastName && initial.LastName.trim() !== "") ||
+      (initial.Position && initial.Position.trim() !== "")
+    ) {
       handleSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,16 +86,28 @@ export default function EmployeeSearch() {
           onChange={(e) => setQueryLastName(e.target.value)}
           className="employee-search__input"
         />
+        <input
+          type="text"
+          placeholder="Position"
+          value={queryPosition}
+          onChange={(e) => setQueryPosition(e.target.value)}
+          className="employee-search__input"
+        />
         <button onClick={handleSearch} className="employee-search__button">
           Search
         </button>
       </div>
 
-      {searched && (
+      {loading && (
+        <p className="employee-search__loading">Searching...</p>
+      )}
+
+      {!loading && searched && (
         <table className="employee-search__table">
           <thead>
             <tr>
               <th>Name</th>
+              <th>Title</th>
               <th>Department</th>
               <th>ID</th>
             </tr>
@@ -92,17 +117,22 @@ export default function EmployeeSearch() {
               employees.map((item) => (
                 <tr key={item.EmployeeID}>
                   <td>
-                    <a onClick={() => navigate(`../person/${item.EmployeeID}`)}>
+                    <EmployeePreviewTrigger
+                      employeeId={item.EmployeeID}
+                      onNavigate={() => navigate(`../person/${item.EmployeeID}`)}
+                      ariaLabel={`View profile for ${item.FirstName} ${item.LastName}`}
+                    >
                       {item.FirstName} {item.LastName}
-                    </a>
+                    </EmployeePreviewTrigger>
                   </td>
+                  <td>{item.Title}</td>
                   <td>{item.DepartmentName}</td>
                   <td>{item.EmployeeID}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="employee-search__no-results">
+                <td colSpan={4} className="employee-search__no-results">
                   No employees found
                 </td>
               </tr>
