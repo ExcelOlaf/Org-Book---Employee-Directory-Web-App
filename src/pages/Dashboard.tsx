@@ -35,6 +35,25 @@ export default function Dashboard() {
   const [managerName, setManagerName] = useState("");
   const [directReports, setDirectReports] = useState<{ id: number; name: string }[]>([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
+const officeMessages = [
+  "IT maintenance scheduled tonight at 8 PM.",
+  "Welcome our new hires joining this week 🎉",
+  "Reminder: Team lunch tomorrow at 12 PM.",
+  "Office will be closed this Friday.",
+  "Security update: Please reset your password this week.",
+  "New org chart updates are now available.",
+  "HR office hours available Thursday afternoon.",
+];
+const messageOfTheDay = useMemo(() => {
+  const stored = sessionStorage.getItem("office-message");
+  if (stored) return stored;
+
+  const random =
+    officeMessages[Math.floor(Math.random() * officeMessages.length)];
+
+  sessionStorage.setItem("office-message", random);
+  return random;
+}, []);
 
   /** Fetch profile details for the currently-selected employeeId */
   useEffect(() => {
@@ -176,8 +195,8 @@ export default function Dashboard() {
           </section>
 
           <div className="dashboard__fw-box">
-            <div className="dashboard__fw-title">Fun</div>
-            <div className="dashboard__fw-subtitle">TBD</div>
+            <div className="dashboard__fw-title">Message Of the Day</div>
+            <div className="dashboard__fw-subtitle">{messageOfTheDay}</div>
           </div>
         </div>
 

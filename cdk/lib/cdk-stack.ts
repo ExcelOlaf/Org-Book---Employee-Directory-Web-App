@@ -196,6 +196,19 @@ export class CdkStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "BucketName", { value: bucket.bucketName });
     new cdk.CfnOutput(this, "TableName", { value: employeeTable.tableName });
+        const getAllEmployeesLambda = new lambda.Function(this, "GetAllEmployeesLambda", {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        handler: "lambda/get-all-employees.handler",
+        code: lambda.Code.fromAsset("dist/src"),
+
+        timeout: Duration.seconds(60),
+
+        environment: {
+          TABLE_NAME: employeeTable.tableName,
+        },
+      });
+
+      employeeTable.grantReadData(getAllEmployeesLambda);
 
     const searchEmployeesLambda = new lambda.Function(this, "SearchLambda", {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -316,6 +329,7 @@ export class CdkStack extends cdk.Stack {
     });
 
     const employees = api.root.addResource('employees');
+    employees.addMethod('GET', new apigateway.LambdaIntegration(getAllEmployeesLambda));
     const employeeID = employees.addResource('{employeeId}');
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda));
     const search = employees.addResource('search');

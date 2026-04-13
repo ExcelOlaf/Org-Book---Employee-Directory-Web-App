@@ -10,6 +10,7 @@ import DepartmentLookup from "./pages/DepartmentLookup";
 import DepartmentView from "./pages/DepartmentView";
 import OrgTree from "./pages/OrgTree";
 import EmployeeSearch from "./pages/EmployeeSearch";
+import Fun from "./pages/Fun";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -140,6 +141,14 @@ export default function App() {
               element={
                 <ProtectedRoute user={user}>
                   <EmployeeSearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/fun"
+              element={
+                <ProtectedRoute user={user}>
+                  <Fun />
                 </ProtectedRoute>
               }
             />

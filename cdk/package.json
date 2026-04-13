@@ -15,7 +15,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
-    "@types/node": "18.14.6",
+    "@types/node": "^18.19.130",
     "aws-cdk": "^2.1105.0",
     "aws-cdk-lib": "^2.239.0",
     "constructs": "^10.4.2",

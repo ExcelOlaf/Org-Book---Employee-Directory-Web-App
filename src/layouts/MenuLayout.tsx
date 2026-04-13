@@ -11,6 +11,7 @@ const menuItems: MenuItem[] = [
   { name: "Department Lookup", path: "/departments" },
   { name: "Employee Lookup", path: "/employees" },
   { name: "Org Tree", path: "/org-tree" },
+  { name: "Fun", path: "/fun" },
   { name: "Settings", path: "/settings" },
 ];
 

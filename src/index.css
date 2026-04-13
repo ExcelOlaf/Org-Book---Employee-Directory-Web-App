@@ -347,7 +347,7 @@ button {
 .dashboard__fw-box {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   border-radius: var(--radius-xl);
-  width: 180px;
+  width: 1000px;
   height: 140px;
   display: flex;
   flex-direction: column;
