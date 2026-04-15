@@ -6,16 +6,25 @@ import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 
 const PLACEHOLDER_ID = 730467;
 
+type Suggestion = {
+  EmployeeID: number;
+  FirstName: string;
+  LastName: string;
+  Title?: string;
+};
+
+const officeMessages = [
+  "IT maintenance scheduled tonight at 8 PM.",
+  "Welcome our new hires joining this week 🎉",
+  "Reminder: Team lunch tomorrow at 12 PM.",
+  "Office will be closed this Friday.",
+  "Security update: Please reset your password this week.",
+  "New org chart updates are now available.",
+  "HR office hours available Thursday afternoon.",
+];
+
 export default function Dashboard() {
-
-  type Suggestion = {
-    EmployeeID: number;
-    FirstName: string;
-    LastName: string;
-    Title?: string;
-  };
-
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]); 
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
@@ -30,7 +39,6 @@ export default function Dashboard() {
   const [lastName, setLastName] = useState("");
 
   const goToEmployeeSearch = () => {
-    // Navigate to employee search page and pass initial query
     navigate("/employees", {
       state: { FirstName: firstName.trim(), LastName: lastName.trim() },
     });
@@ -50,32 +58,26 @@ export default function Dashboard() {
   const [managerName, setManagerName] = useState("");
   const [directReports, setDirectReports] = useState<{ id: number; name: string }[]>([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
-const officeMessages = [
-  "IT maintenance scheduled tonight at 8 PM.",
-  "Welcome our new hires joining this week 🎉",
-  "Reminder: Team lunch tomorrow at 12 PM.",
-  "Office will be closed this Friday.",
-  "Security update: Please reset your password this week.",
-  "New org chart updates are now available.",
-  "HR office hours available Thursday afternoon.",
-];
-const messageOfTheDay = useMemo(() => {
-  const stored = sessionStorage.getItem("office-message");
-  if (stored) return stored;
 
-  const random =
-    officeMessages[Math.floor(Math.random() * officeMessages.length)];
+  const messageOfTheDay = useMemo(() => {
+    const stored = sessionStorage.getItem("office-message");
+    if (stored) return stored;
 
-  sessionStorage.setItem("office-message", random);
-  return random;
-}, []);
+    const random =
+      officeMessages[Math.floor(Math.random() * officeMessages.length)];
+
+    sessionStorage.setItem("office-message", random);
+    return random;
+  }, []);
 
   /** Fetch profile details for the currently-selected employeeId */
   useEffect(() => {
     let cancelled = false;
     setLoadingProfile(true);
 
-    async function getDirectReports(ids: number[]): Promise<{ id: number; name: string }[]> {
+    async function getDirectReports(
+      ids: number[]
+    ): Promise<{ id: number; name: string }[]> {
       const results = await Promise.all(
         ids.map(async (rid) => {
           const res = await authenticatedFetch(`${API_BASE_URL}/employees/${rid}`);
@@ -83,7 +85,10 @@ const messageOfTheDay = useMemo(() => {
             throw new Error(`Failed to load direct report ${rid} (status ${res.status})`);
           }
           const directReport = await res.json();
-          return { id: rid, name: `${directReport.FirstName} ${directReport.LastName}` };
+          return {
+            id: rid,
+            name: `${directReport.FirstName} ${directReport.LastName}`,
+          };
         })
       );
       return results;
@@ -100,7 +105,11 @@ const messageOfTheDay = useMemo(() => {
         if (cancelled) return;
 
         setName(`${employee.FirstName} ${employee.LastName}`);
-        setAge(employee.Age !== undefined && employee.Age !== null ? Number(employee.Age) : undefined);
+        setAge(
+          employee.Age !== undefined && employee.Age !== null
+            ? Number(employee.Age)
+            : undefined
+        );
         setTitle(employee.Title ?? "");
         setAddress(employee.Address ?? "");
         setDepartment(employee.DepartmentName ?? "");
@@ -110,9 +119,13 @@ const messageOfTheDay = useMemo(() => {
 
         // Manager
         if (employee.ManagerID) {
-          const mgrRes = await authenticatedFetch(`${API_BASE_URL}/employees/${employee.ManagerID}`);
+          const mgrRes = await authenticatedFetch(
+            `${API_BASE_URL}/employees/${employee.ManagerID}`
+          );
           if (!mgrRes.ok) {
-            throw new Error(`Failed to load manager ${employee.ManagerID} (status ${mgrRes.status})`);
+            throw new Error(
+              `Failed to load manager ${employee.ManagerID} (status ${mgrRes.status})`
+            );
           }
           const mgr = await mgrRes.json();
           if (!cancelled) {
@@ -130,7 +143,11 @@ const messageOfTheDay = useMemo(() => {
           const raw = employee.DirectReportsList;
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) ids = parsed.map((x) => Number(x)).filter((x) => Number.isFinite(x));
+            if (Array.isArray(parsed)) {
+              ids = parsed
+                .map((x) => Number(x))
+                .filter((x) => Number.isFinite(x));
+            }
           }
         } catch {
           // ignore parse issues
@@ -155,14 +172,7 @@ const messageOfTheDay = useMemo(() => {
     };
   }, [employeeId]);
 
-  if (loadingProfile) {
-    return (
-      <div className="dashboard__loading">
-        <h2>Loading employee details...</h2>
-      </div>
-    );
-  }
-
+  /** Suggestions search effect */
   useEffect(() => {
     const fn = firstName.trim();
     const ln = lastName.trim();
@@ -204,9 +214,16 @@ const messageOfTheDay = useMemo(() => {
     };
   }, [firstName, lastName]);
 
+  if (loadingProfile) {
+    return (
+      <div className="dashboard__loading">
+        <h2>Loading employee details...</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
-      {/* ===== TOP SEARCH BAR (SIMPLE) ===== */}
       <div className="dashboard__search">
         <div className="dashboard__search-row" style={{ position: "relative" }}>
           <input
@@ -214,7 +231,7 @@ const messageOfTheDay = useMemo(() => {
             placeholder="First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            onFocus={() => suggestions.length && setShowSuggestions(true)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
           />
@@ -223,7 +240,7 @@ const messageOfTheDay = useMemo(() => {
             placeholder="Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            onFocus={() => suggestions.length && setShowSuggestions(true)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
           />
@@ -233,18 +250,24 @@ const messageOfTheDay = useMemo(() => {
 
           {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
             <ul className="dashboard__suggestions">
-              {loadingSuggestions && <li className="dashboard__suggestion--muted">Searching...</li>}
+              {loadingSuggestions && (
+                <li className="dashboard__suggestion--muted">Searching...</li>
+              )}
               {suggestions.map((s) => (
-                <li 
-                  key={s.EmployeeID} 
+                <li
+                  key={s.EmployeeID}
                   className="dashboard__suggestion"
                   onMouseDown={() => {
                     setShowSuggestions(false);
                     navigate(`/person/${s.EmployeeID}`);
                   }}
                 >
-                  <strong>{s.FirstName} {s.LastName}</strong>
-                  {s.Title && <span className="dashboard__suggestion-title"> — {s.Title}</span>}
+                  <strong>
+                    {s.FirstName} {s.LastName}
+                  </strong>
+                  {s.Title && (
+                    <span className="dashboard__suggestion-title"> — {s.Title}</span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -252,9 +275,7 @@ const messageOfTheDay = useMemo(() => {
         </div>
       </div>
 
-      {/* ===== DASHBOARD GRID (profile view) ===== */}
       <div className="dashboard__grid">
-        {/* LEFT COLUMN */}
         <div className="dashboard__left-column">
           <section className="dashboard__section">
             <div className="dashboard__section-title">Basic Info</div>
@@ -264,7 +285,13 @@ const messageOfTheDay = useMemo(() => {
                 <strong>Age:</strong> {age !== undefined ? String(age) : ""}
               </p>
               <p>
-                <strong>Department:</strong> <a className="dashboard__link" onClick={() => navigate(`/departments/${department}`)}>{department}</a>
+                <strong>Department:</strong>{" "}
+                <a
+                  className="dashboard__link"
+                  onClick={() => navigate(`/departments/${department}`)}
+                >
+                  {department}
+                </a>
               </p>
               <p>
                 <strong>Address:</strong> {address}
@@ -291,22 +318,41 @@ const messageOfTheDay = useMemo(() => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div className="dashboard__right-column">
           <div className="dashboard__name-wrapper">
             <div className="dashboard__name-box">
-              <div><strong>{name}</strong></div>
+              <div>
+                <strong>{name}</strong>
+              </div>
               <div>{title}</div>
             </div>
           </div>
 
           <div className="dashboard__profile-circle">
-            {picture && <img src={picture} alt="Profile Picture" className="dashboard__profile-image" />}
+            {picture && (
+              <img
+                src={picture}
+                alt="Profile Picture"
+                className="dashboard__profile-image"
+              />
+            )}
           </div>
 
           <div className="dashboard__chips">
-            <div className="dashboard__chip" onClick={() => navigate(`/org-tree/${employeeId}`)}>Org</div>
-            <div className="dashboard__chip" onClick={() => window.location.href = `mailto:${email}`}>Email</div>
+            <div
+              className="dashboard__chip"
+              onClick={() => navigate(`/org-tree/${employeeId}`)}
+            >
+              Org
+            </div>
+            <div
+              className="dashboard__chip"
+              onClick={() => {
+                window.location.href = `mailto:${email}`;
+              }}
+            >
+              Email
+            </div>
             <div className="dashboard__chip">Phone</div>
           </div>
 
