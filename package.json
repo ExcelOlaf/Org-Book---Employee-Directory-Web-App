@@ -14,7 +14,8 @@
     "cdk:deploy": "cd cdk && npm run cdk deploy",
     "cdk:build": "cd cdk && npm run build",
     "deploy": "npm run build && npm run cdk:build && npm run cdk:deploy",
-    "deploy:website": "npm run build && aws s3 sync dist/ s3://cdkstack-websitebucket75c24d94-34vikulmca26 --delete && aws cloudfront create-invalidation --distribution-id E10OKSYXS0TBLG --paths \"/*\""
+    "deploy:website": "npm run build && aws s3 sync dist/ s3://cdkstack-websitebucket75c24d94-34vikulmca26 --delete && aws cloudfront create-invalidation --distribution-id E10OKSYXS0TBLG --paths \"/*\"",
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.19.1",

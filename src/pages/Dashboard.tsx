@@ -7,6 +7,18 @@ import EmployeePreviewTrigger from "../components/EmployeePreviewTrigger";
 const PLACEHOLDER_ID = 730467;
 
 export default function Dashboard() {
+
+  type Suggestion = {
+    EmployeeID: number;
+    FirstName: string;
+    LastName: string;
+    Title?: string;
+  };
+
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]); 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
@@ -151,16 +163,59 @@ const messageOfTheDay = useMemo(() => {
     );
   }
 
+  useEffect(() => {
+    const fn = firstName.trim();
+    const ln = lastName.trim();
+
+    if (!fn && !ln) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoadingSuggestions(true);
+      try {
+        const params = new URLSearchParams();
+        if (fn) params.append("FirstName", fn);
+        if (ln) params.append("LastName", ln);
+        params.set("limit", "8");
+
+        const res = await authenticatedFetch(
+          `${API_BASE_URL}/employees?${params.toString()}`,
+          { signal: controller.signal }
+        );
+
+        if (!res.ok) throw new Error(`Search Failed (${res.status})`);
+        const data = await res.json();
+        setSuggestions(Array.isArray(data) ? data : data.results ?? []);
+        setShowSuggestions(true);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") console.error(err);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [firstName, lastName]);
+
   return (
     <div className="dashboard">
       {/* ===== TOP SEARCH BAR (SIMPLE) ===== */}
       <div className="dashboard__search">
-        <div className="dashboard__search-row">
+        <div className="dashboard__search-row" style={{ position: "relative" }}>
           <input
             className="dashboard__search-input"
             placeholder="First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            onFocus={() => suggestions.length && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
           />
           <input
@@ -168,11 +223,32 @@ const messageOfTheDay = useMemo(() => {
             placeholder="Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            onFocus={() => suggestions.length && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             onKeyDown={(e) => e.key === "Enter" && goToEmployeeSearch()}
           />
           <button className="dashboard__search-button" onClick={goToEmployeeSearch}>
             Search
           </button>
+
+          {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
+            <ul className="dashboard__suggestions">
+              {loadingSuggestions && <li className="dashboard__suggestion--muted">Searching...</li>}
+              {suggestions.map((s) => (
+                <li 
+                  key={s.EmployeeID} 
+                  className="dashboard__suggestion"
+                  onMouseDown={() => {
+                    setShowSuggestions(false);
+                    navigate(`/person/${s.EmployeeID}`);
+                  }}
+                >
+                  <strong>{s.FirstName} {s.LastName}</strong>
+                  {s.Title && <span className="dashboard__suggestion-title"> — {s.Title}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

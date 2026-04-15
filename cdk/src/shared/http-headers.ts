@@ -1,12 +1,13 @@
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://www.orgbooksd.com",
+  "https://orgbooksd.com",
   "https://d2ywwchq35tdbl.cloudfront.net",
 ];
 
 function getAllowedOrigins(): string[] {
   const configured = process.env.API_ALLOWED_ORIGINS
     ?.split(",")
-    .map((origin) => origin.trim())
+    .map((origin: string) => origin.trim())
     .filter(Boolean);
 
   if (configured && configured.length > 0) {

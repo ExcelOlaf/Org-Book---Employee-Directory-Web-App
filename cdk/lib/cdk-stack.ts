@@ -22,7 +22,12 @@ export class CdkStack extends cdk.Stack {
     const allowedApiOrigins =
       this.node.tryGetContext('allowedApiOrigins') ||
       process.env.ALLOWED_API_ORIGINS ||
-      'https://www.orgbooksd.com,https://d2ywwchq35tdbl.cloudfront.net';
+      'https://www.orgbooksd.com,https://orgbooksd.com,https://d2ywwchq35tdbl.cloudfront.net';
+
+    const allowedApiOriginsList = allowedApiOrigins
+      .split(',')
+      .map((origin: string) => origin.trim())
+      .filter(Boolean);
 
     // Cognito config (define early so it's available to all lambdas)
     const userPoolId = this.node.tryGetContext('userPoolId') || process.env.USER_POOL_ID || 'us-east-2_00owBPrPI';
@@ -376,11 +381,11 @@ export class CdkStack extends cdk.Stack {
         },
       },
       defaultCorsPreflightOptions: {
-        // Limit browser callers to your production site domain.
-        // This is free and reduces cross-origin misuse from arbitrary sites.
-        allowOrigins: ['https://www.orgbooksd.com', 'https://orgbooksd.com'],
+        // Keep preflight origins aligned with deployment configuration.
+        allowOrigins: allowedApiOriginsList,
         allowMethods: ['GET', 'PATCH', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
+        allowCredentials: true,
       },
     });
 
@@ -399,7 +404,7 @@ export class CdkStack extends cdk.Stack {
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda), authenticatedMethodOptions);
     const uploadUrl = employeeID.addResource('upload-url');
     uploadUrl.addMethod('GET', new apigateway.LambdaIntegration(getUploadUrlLambda), authenticatedMethodOptions);
-    employeeID.addMethod('PATCH', new apigateway.LambdaIntegration(updateEmployeePictureLambda));
+    employeeID.addMethod('PATCH', new apigateway.LambdaIntegration(updateEmployeePictureLambda), authenticatedMethodOptions);
     const search = employees.addResource('search');
     search.addMethod('GET', new apigateway.LambdaIntegration(searchEmployeesLambda), authenticatedMethodOptions);
     const departments = api.root.addResource('departments');
@@ -445,7 +450,7 @@ export class CdkStack extends cdk.Stack {
       securityHeadersBehavior: {
         contentSecurityPolicy: {
           contentSecurityPolicy:
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://u3fn94z8c3.execute-api.us-east-2.amazonaws.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
+            `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://u3fn94z8c3.execute-api.us-east-2.amazonaws.com https://cognito-idp.${this.region}.amazonaws.com https://cognito-identity.${this.region}.amazonaws.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests`,
           override: true,
         },
         contentTypeOptions: { override: true },
