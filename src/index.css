@@ -278,7 +278,6 @@ button {
 
 .menu-layout {
   display: flex;
-  min-height: 100vh;
   background-color: var(--bg-dark);
   color: var(--text-inverse);
 }
@@ -362,7 +361,7 @@ button {
 
 .menu-layout__main {
   flex: 1;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   background-color: var(--bg-secondary);
   overflow-y: auto;
 }
@@ -380,7 +379,7 @@ button {
 .dashboard__grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
 .dashboard__left-column {
@@ -399,7 +398,7 @@ button {
   background-color: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   box-shadow: var(--shadow-md);
 }
 
@@ -420,24 +419,25 @@ button {
   background-color: var(--bg-tertiary);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
-  min-height: 140px;
+  min-height: 100px;
   padding: var(--spacing-lg);
 }
 
 .dashboard__card--contact {
-  min-height: 220px;
+  min-height: 110px;
 }
 
 .dashboard__fw-box {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  border-radius: var(--radius-xl);
-  width: 1000px;
-  height: 140px;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 140px;
+  height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
+  margin-left: 0;
   box-shadow: var(--shadow-lg);
   color: var(--text-inverse);
 }

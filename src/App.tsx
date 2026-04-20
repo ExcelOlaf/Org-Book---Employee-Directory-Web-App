@@ -14,9 +14,6 @@ import Fun from "./pages/Fun";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// ─── Auth Context ──────────────────────────────────────────────────────────────
-// Provides the current Cognito user object and a signOut helper to any component
-// in the tree via useAuth().
 interface AuthContextType {
   user: any;
   signOut: () => Promise<void>;
@@ -31,9 +28,6 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-// Reads the logged-in user's employeeId claim from the Cognito ID token and
-// redirects to their PersonView. Falls back to a placeholder if the claim is
-// not yet present (e.g. first login before the pre-token Lambda runs).
 function DashboardRedirect() {
   const [target, setTarget] = useState<string | null>(null);
 
@@ -47,36 +41,33 @@ function DashboardRedirect() {
       .catch(() => setTarget("/person/730467"));
   }, []);
 
-  if (!target) return null; // brief loading pause while token is read
+  if (!target) return null;
   return <Navigate to={target} replace />;
 }
 
-// ─── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if a session already exists when the app first loads.
     getCurrentUser()
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
 
-    // Keep state in sync when Amplify fires sign-in / sign-out events
-    // (e.g. the Login page calling signIn(), or a token expiry).
     const cancel = Hub.listen("auth", ({ payload }) => {
       if (payload.event === "signedIn") {
         getCurrentUser()
           .then(setUser)
           .catch(() => setUser(null));
       }
+
       if (payload.event === "signedOut") {
         setUser(null);
       }
     });
 
-    return cancel; // unsubscribe on unmount
+    return cancel;
   }, []);
 
   const handleSignOut = async () => {
@@ -96,16 +87,14 @@ export default function App() {
     <AuthContext.Provider value={{ user, signOut: handleSignOut }}>
       <Router>
         <Routes>
-          {/* Login page – redirect straight to dashboard if already signed in */}
           <Route
             path="/"
             element={user ? <Navigate to="/dashboard" replace /> : <Login />}
           />
 
-          {/* Everything else lives inside the left-sidebar shell */}
           <Route element={<MenuLayout />}>
             <Route
-              path="/dashboard"
+              path="dashboard"
               element={
                 <ProtectedRoute user={user}>
                   <DashboardRedirect />
@@ -113,7 +102,7 @@ export default function App() {
               }
             />
             <Route
-              path="/departments"
+              path="departments"
               element={
                 <ProtectedRoute user={user}>
                   <DepartmentLookup />
@@ -121,7 +110,7 @@ export default function App() {
               }
             />
             <Route
-              path="/departments/:deptId"
+              path="departments/:deptId"
               element={
                 <ProtectedRoute user={user}>
                   <DepartmentView />
@@ -129,7 +118,7 @@ export default function App() {
               }
             />
             <Route
-              path="/org-tree/:id"
+              path="org-tree/:id"
               element={
                 <ProtectedRoute user={user}>
                   <OrgTree />
@@ -137,7 +126,7 @@ export default function App() {
               }
             />
             <Route
-              path="/employees"
+              path="employees"
               element={
                 <ProtectedRoute user={user}>
                   <EmployeeSearch />
@@ -145,24 +134,23 @@ export default function App() {
               }
             />
             <Route
-              path="/fun"
+              path="fun"
               element={
                 <ProtectedRoute user={user}>
                   <Fun />
                 </ProtectedRoute>
               }
             />
-            {/* Settings is Admin-only */}
             <Route
-              path="/settings"
+              path="settings"
               element={
-                <ProtectedRoute user={user} requiredGroups={["Admin"]}>
+                <ProtectedRoute user={user}>
                   <Settings />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/person/:id"
+              path="person/:id"
               element={
                 <ProtectedRoute user={user}>
                   <Dashboard />
