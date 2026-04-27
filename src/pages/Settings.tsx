@@ -34,10 +34,14 @@ export default function Settings() {
         const sx = (img.width - minDimension) / 2;
         const sy = (img.height - minDimension) / 2;
         ctx.drawImage(img, sx, sy, minDimension, minDimension, 0, 0, size, size);
-        URL.revokeObjectURL(img.src);
         canvas.toBlob((blob) => resolve(blob!), "image/png");
       };
-      img.src = URL.createObjectURL(file);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
     });
   };
 
