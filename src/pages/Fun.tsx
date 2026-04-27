@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 
 type EmployeeData = {
   EmployeeID: number;
@@ -13,21 +14,21 @@ export default function Fun() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadEmployees();
+    setLoading(true);
+
+    authenticatedFetch(`${API_BASE_URL}/employees`)
+      .then((res) => res.json())
+      .then((data: EmployeeData[]) => {
+        setEmployees(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load employees:", err);
+        setEmployees([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
-
-  async function loadEmployees() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/employees`);
-      const data: EmployeeData[] = await response.json();
-
-      setEmployees(data);
-    } catch (err) {
-      console.error("Failed to load employees:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const fact = useMemo(() => {
     if (!employees.length) return "No employee data available.";
@@ -55,7 +56,11 @@ export default function Fun() {
   const today = new Date().toLocaleString();
 
   if (loading) {
-    return <div style={{ padding: "80px", color: "#000" }}>Loading fun facts...</div>;
+    return (
+      <div style={{ padding: "80px", color: "#000" }}>
+        Loading fun facts...
+      </div>
+    );
   }
 
   return (
@@ -65,7 +70,7 @@ export default function Fun() {
         minHeight: "90vh",
         display: "flex",
         flexDirection: "column",
-        color: "#000"
+        color: "#000",
       }}
     >
       {/* top bar */}
@@ -80,7 +85,6 @@ export default function Fun() {
           marginTop: "50px",
           fontSize: "42px",
           fontWeight: 700,
-          color: "#000"
         }}
       >
         {getGreeting()} 👋
@@ -92,7 +96,7 @@ export default function Fun() {
           marginTop: "80px",
           fontSize: "28px",
           color: "#4f46e5",
-          fontWeight: 700
+          fontWeight: 700,
         }}
       >
         Fun Fact
@@ -103,7 +107,7 @@ export default function Fun() {
         style={{
           marginTop: "40px",
           display: "flex",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <div
@@ -117,7 +121,7 @@ export default function Fun() {
             fontWeight: 600,
             maxWidth: "900px",
             width: "100%",
-            boxShadow: "0 10px 20px rgba(0,0,0,0.25)"
+            boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
           }}
         >
           {fact}
@@ -130,7 +134,6 @@ export default function Fun() {
           style={{
             textAlign: "right",
             fontSize: "20px",
-            color: "#000"
           }}
         >
           Have a great day 🙂
@@ -156,28 +159,29 @@ function generateFacts(employees: EmployeeData[]): string[] {
     (a, b) => b[1] - a[1]
   );
 
-  const largestDepartment = sortedDepartments[0];
-
-  facts.push(
-    `${largestDepartment[0]} has the most employees (${largestDepartment[1]} people).`
-  );
+  if (sortedDepartments.length > 0) {
+    const largestDepartment = sortedDepartments[0];
+    facts.push(
+      `${largestDepartment[0]} has the most employees (${largestDepartment[1]} people).`
+    );
+  }
 
   facts.push(
     `There are currently ${totalEmployees} employees in the organization.`
   );
 
-  const departmentCount = Object.keys(departmentCounts).length;
-
   facts.push(
-    `Employees are spread across ${departmentCount} departments.`
+    `Employees are spread across ${Object.keys(departmentCounts).length} departments.`
   );
 
-  const randomEmployee =
-    employees[Math.floor(Math.random() * employees.length)];
+  if (employees.length > 0) {
+    const randomEmployee =
+      employees[Math.floor(Math.random() * employees.length)];
 
-  facts.push(
-    `${randomEmployee.FirstName} ${randomEmployee.LastName} works in ${randomEmployee.DepartmentName}.`
-  );
+    facts.push(
+      `${randomEmployee.FirstName} ${randomEmployee.LastName} works in ${randomEmployee.DepartmentName}.`
+    );
+  }
 
   return facts;
 }

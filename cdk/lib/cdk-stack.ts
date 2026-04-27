@@ -399,7 +399,7 @@ export class CdkStack extends cdk.Stack {
     };
 
     const employees = api.root.addResource('employees');
-    employees.addMethod('GET', new apigateway.LambdaIntegration(getAllEmployeesLambda));
+    employees.addMethod('GET', new apigateway.LambdaIntegration(getAllEmployeesLambda), authenticatedMethodOptions);
     const employeeID = employees.addResource('{employeeId}');
     employeeID.addMethod('GET', new apigateway.LambdaIntegration(getEmployeeLambda), authenticatedMethodOptions);
     const uploadUrl = employeeID.addResource('upload-url');
