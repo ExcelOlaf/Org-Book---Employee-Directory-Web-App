@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAuthSession } from "@aws-amplify/auth";
 import { API_BASE_URL } from "../utils/apiRoute";
+import { authenticatedFetch } from "../utils/authenticatedFetch";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -51,20 +52,31 @@ export default function Settings() {
     try {
       const resized = await resizeImage(file, 227);
 
-      const urlRes = await fetch(`${API_BASE_URL}/employees/${employeeId}/upload-url?fileType=${file.type}`);
+      const urlRes = await authenticatedFetch(
+        `${API_BASE_URL}/employees/${employeeId}/upload-url?fileType=${encodeURIComponent(file.type)}`
+      );
+      if (!urlRes.ok) {
+        throw new Error("Failed to get upload URL");
+      }
       const { uploadUrl, pictureUrl } = await urlRes.json();
 
-      await fetch(uploadUrl, {
+      const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: resized,
         headers: { "Content-Type": "image/png" },
       });
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload image to S3");
+      }
 
-      await fetch(`${API_BASE_URL}/employees/${employeeId}`, {
+      const updateRes = await authenticatedFetch(`${API_BASE_URL}/employees/${employeeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ Picture: pictureUrl }),
       });
+      if (!updateRes.ok) {
+        throw new Error("Failed to save picture URL");
+      }
 
       setUploadSuccess(true);
     } catch (err) {
