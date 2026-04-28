@@ -16,7 +16,9 @@ export default function Settings() {
 
   useEffect(() => {
     fetchAuthSession().then((session) => {
-      const payload = session.tokens?.idToken?.payload as Record<string, any>;
+      const payload = (session.tokens?.idToken?.payload ??
+        session.tokens?.accessToken?.payload ??
+        {}) as Record<string, any>;
       const id = payload?.["employeeId"] ?? payload?.["custom:employeeId"];
       if (id) setEmployeeId(Number(id));
     });
@@ -57,7 +59,7 @@ export default function Settings() {
       const resized = await resizeImage(file, 227);
 
       const urlRes = await authenticatedFetch(
-        `${API_BASE_URL}/employees/${employeeId}/upload-url?fileType=${encodeURIComponent(file.type)}`
+        `${API_BASE_URL}/employees/${employeeId}/upload-url?fileType=${encodeURIComponent("image/png")}`
       );
       if (!urlRes.ok) {
         throw new Error("Failed to get upload URL");
@@ -87,6 +89,7 @@ export default function Settings() {
       setUploadError("Failed to upload picture. Please try again.");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 

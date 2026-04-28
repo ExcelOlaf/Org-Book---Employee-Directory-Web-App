@@ -16,7 +16,7 @@ export const handler = async (event: any) => {
         return { statusCode: 400, headers, body: JSON.stringify({ message: "Missing employeeId" }) };
     }
 
-    const fileType = event.queryStringParameters?.fileType ?? "image/jpeg";
+    const fileType = "image/png";
     const key = `profile-pictures/${employeeId}.png`;
 
     const command = new PutObjectCommand({
